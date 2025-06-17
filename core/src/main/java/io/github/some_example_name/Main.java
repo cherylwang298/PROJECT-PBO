@@ -2,10 +2,12 @@ package io.github.some_example_name;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import io.github.some_example_name.screens.GameScreen;
 import io.github.some_example_name.screens.HomeScreen;
 
 public class Main extends Game {
     public SpriteBatch batch;
+    public GameScreen gameScreen;
 
     @Override
     public void create() {

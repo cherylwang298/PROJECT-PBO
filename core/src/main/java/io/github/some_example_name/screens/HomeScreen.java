@@ -35,7 +35,7 @@ public class HomeScreen implements Screen {
         Gdx.input.setInputProcessor(stage);
 
         // Background
-        bgTexture = new Texture("colosseumBG.jpeg");
+        bgTexture = new Texture("smallerOne.jpg");
         Image bg = new Image(new TextureRegionDrawable(bgTexture));
         bg.setFillParent(true);
         stage.addActor(bg);
@@ -54,7 +54,7 @@ public class HomeScreen implements Screen {
             @Override public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) { return true; }
             @Override public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 System.out.println("Play clicked!");
-                // game.setScreen(new GameScreen(game));
+                game.setScreen(new GameScreen(game));
             }
         });
 
@@ -75,7 +75,7 @@ public class HomeScreen implements Screen {
         // Tambahkan tombol (dummy size dulu, akan disesuaikan di resize)
         playCell = table.add(playButton);
         table.row();
-        exitCell = table.add(exitButton).padTop(-30f);
+        exitCell = table.add(exitButton).padTop(-55f);
 
         // Pertama kali sesuaikan ukuran
         resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
