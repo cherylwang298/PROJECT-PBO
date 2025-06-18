@@ -1,109 +1,10 @@
-//package io.github.some_example_name.screens;
-//
-//import com.badlogic.gdx.Gdx;
-//import com.badlogic.gdx.Screen;
-//import com.badlogic.gdx.graphics.Texture;
-//import com.badlogic.gdx.scenes.scene2d.Stage;
-//import com.badlogic.gdx.scenes.scene2d.ui.Image;
-//import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
-//import com.badlogic.gdx.scenes.scene2d.ui.Table;
-//import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
-//import com.badlogic.gdx.utils.viewport.ScreenViewport;
-//import com.badlogic.gdx.scenes.scene2d.InputEvent;
-//import com.badlogic.gdx.scenes.scene2d.InputListener;
-//import com.badlogic.gdx.scenes.scene2d.ui.Cell;
-//import com.badlogic.gdx.utils.Scaling;
-//import io.github.some_example_name.Main;
-//
-//public class GameScreen implements Screen {
-//
-//    private final Main game;
-//    private Texture gameBackground;
-//    private Texture pauseTexture;
-//    private Stage stage;
-//
-//    private ImageButton pauseButton;
-//    private Cell<ImageButton> pauseCell;
-//    private Table table;
-//
-//    public GameScreen(Main game) {
-//        this.game = game;
-//
-//        // Load textures
-//        gameBackground = new Texture("biggerOne.jpg");
-//        pauseTexture = new Texture("pauseButton.png");
-//
-//        // Set up stage
-//        stage = new Stage(new ScreenViewport());
-//        Gdx.input.setInputProcessor(stage);
-//
-//        // Background as Image actor
-//        Image bg = new Image(new TextureRegionDrawable(gameBackground));
-//        bg.setFillParent(true);
-//        bg.setScaling(Scaling.fill); // or Scaling.stretch / fit
-//        stage.addActor(bg); // Tambahkan background dulu supaya di bawah
-//
-//        // Pause Button
-//        pauseButton = new ImageButton(new TextureRegionDrawable(pauseTexture));
-//        pauseButton.addListener(new InputListener() {
-//            @Override
-//            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-//                return true;
-//            }
-//
-//            @Override
-//            public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-//                System.out.println("Pause clicked!");
-//                game.setScreen(new PauseScreen(game, this)); // Bisa diganti ke pause screen
-//            }
-//        });
-//
-//        // Table layout for button
-//        table = new Table();
-//        table.setFillParent(true);
-//        table.top().left(); // Posisi tombol kiri atas
-//        stage.addActor(table); // Tambahkan setelah background supaya muncul di atas
-//
-//        // Responsive initial size
-//        float buttonSize = Gdx.graphics.getWidth() * 0.08f;
-//        pauseCell = table.add(pauseButton).pad(10f).size(buttonSize, buttonSize);
-//    }
-//
-//    @Override
-//    public void show() {}
-//
-//    @Override
-//    public void render(float delta) {
-//        stage.act(delta);
-//        stage.draw(); // Tidak perlu batch manual karena semua pakai Stage
-//    }
-//
-//    @Override
-//    public void resize(int width, int height) {
-//        stage.getViewport().update(width, height, true);
-//
-//        float buttonSize = width * 0.08f;
-//        pauseCell.size(buttonSize, buttonSize);
-//        table.invalidateHierarchy(); // refresh layout
-//    }
-//
-//    @Override public void pause() {}
-//    @Override public void resume() {}
-//    @Override public void hide() {}
-//
-//    @Override
-//    public void dispose() {
-//        stage.dispose();
-//        gameBackground.dispose();
-//        pauseTexture.dispose();
-//    }
-//}
-
-
+// === Package: io.github.some_example_name.screens ===
 package io.github.some_example_name.screens;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input; // Added for player input
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.graphics.GL20; // Added for screen clearing
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
@@ -115,7 +16,9 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.utils.Scaling;
+
 import io.github.some_example_name.Main;
+import io.github.some_example_name.entities.Player; // Import your Player class
 
 public class GameScreen implements Screen {
 
@@ -128,24 +31,42 @@ public class GameScreen implements Screen {
     private Cell<ImageButton> pauseCell;
     private Table table;
 
+    private Player player; // Declare the Player object
+
     public GameScreen(Main game) {
         this.game = game;
 
-        // Load textures
+        // Load textures for UI elements
         gameBackground = new Texture("biggerOne.jpg");
         pauseTexture = new Texture("pauseButton.png");
 
-        // Set up stage
+        // Set up stage (for UI and now your Player Actor)
         stage = new Stage(new ScreenViewport());
+        // CRITICAL: Set input processor to the stage so it can handle input for Actors (like your Player)
         Gdx.input.setInputProcessor(stage);
 
-        // Background as Image actor
+
+        // --- CORRECTED ORDER: Add background FIRST, then player, then UI ---
+        // 1. Background as Image actor (should be at the very bottom layer)
         Image bg = new Image(new TextureRegionDrawable(gameBackground));
         bg.setFillParent(true);
-        bg.setScaling(Scaling.fill); // or Scaling.stretch / fit
-        stage.addActor(bg); // Tambahkan background dulu supaya di bawah
+        bg.setScaling(Scaling.fill);
+        stage.addActor(bg); // Add background first so it draws behind everything else
 
-        // Pause Button
+        // 2. Initialize and Add your Player Actor
+        // Player constructor: (initialHp, initialSpeed, initialDamage, startX, startY)
+        // startX and startY place the player roughly in the center initially.
+        // The -32 is for centering (assuming player sprites are around 64x64, as Actor position is bottom-left).
+        player = new Player(
+            100, // initialHp
+            200, // initialSpeed (Adjust as needed)
+            10,  // initialDamage
+            Gdx.graphics.getWidth() / 2 - 32, // X-coordinate for player's bottom-left corner
+            Gdx.graphics.getHeight() / 2 - 32 // Y-coordinate for player's bottom-left corner
+        );
+        stage.addActor(player); // Add the player to the stage AFTER the background
+
+        // 3. Pause Button and Table (should be on top of game elements)
         pauseButton = new ImageButton(new TextureRegionDrawable(pauseTexture));
         pauseButton.addListener(new InputListener() {
             @Override
@@ -156,35 +77,60 @@ public class GameScreen implements Screen {
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
                 System.out.println("Pause clicked!");
-                game.setScreen(new PauseScreen(game, GameScreen.this)); // ✅ Perbaikan di sini
-
+                // Make sure PauseScreen exists and accepts these arguments
+                // Use GameScreen.this to refer to the GameScreen instance
+                game.setScreen(new PauseScreen(game, GameScreen.this));
             }
         });
 
-        // Table layout for button
         table = new Table();
         table.setFillParent(true);
-        table.top().left(); // Posisi tombol kiri atas
-        stage.addActor(table); // Tambahkan setelah background supaya muncul di atas
+        table.top().left(); // Position button top-left
+        stage.addActor(table); // Add table (and button) after player so it appears on top
 
-        // Responsive initial size
+        // Responsive initial size for button
         float buttonSize = Gdx.graphics.getWidth() * 0.08f;
         pauseCell = table.add(pauseButton).pad(10f).size(buttonSize, buttonSize);
     }
 
     @Override
-    public void show() {}
+    public void show() {
+        // This method is called when this screen becomes the current screen.
+        // All necessary setup is done in the constructor for this scenario.
+    }
 
     @Override
     public void render(float delta) {
+        // Clear the screen with a background color before drawing anything
+        Gdx.gl.glClearColor(0.2f, 0.2f, 0.2f, 1); // Dark grey background
+        Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+
+        // Your friend's existing render loop:
+        // stage.act(delta) automatically calls the act() method of all actors on the stage (including your player).
+        // stage.draw() automatically calls the draw() method of all actors on the stage (including your player).
         stage.act(delta);
-        stage.draw(); // Tidak perlu batch manual karena semua pakai Stage
+        stage.draw();
+
+        // If you want to handle player attack input (e.g., Spacebar) directly from GameScreen,
+        // you would add it AFTER stage.act(delta) but before stage.draw() if it impacts rendering
+        // or just after stage.act(delta) if it only updates internal state.
+        // Since player.act(delta) now handles input, this is technically not strictly needed here anymore,
+        // but it shows where you *could* add more direct screen input handling if needed.
+        // if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
+        //     player.attack();
+        // }
+        // The Player's act() method already handles the SPACE key for attack, so this line isn't necessary here.
     }
 
     @Override
     public void resize(int width, int height) {
+        // Update the stage's viewport when the screen size changes
         stage.getViewport().update(width, height, true);
 
+        // Update player's position on resize to keep it centered
+        player.setPosition(width / 2 - player.getWidth() / 2, height / 2 - player.getHeight() / 2);
+
+        // Adjust button size for responsiveness
         float buttonSize = width * 0.08f;
         pauseCell.size(buttonSize, buttonSize);
         table.invalidateHierarchy(); // refresh layout
@@ -196,8 +142,10 @@ public class GameScreen implements Screen {
 
     @Override
     public void dispose() {
+        // Dispose of all disposable assets to prevent memory leaks
         stage.dispose();
         gameBackground.dispose();
         pauseTexture.dispose();
+        player.dispose(); // Dispose the player's textures
     }
 }
