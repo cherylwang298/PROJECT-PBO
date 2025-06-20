@@ -32,6 +32,9 @@ public class Player extends Actor { // <--- KEY CHANGE: Player now extends Actor
     private Vector2 position;
     private Rectangle bounds; // Collision box for the player
 
+    private float minX = 0f, maxX = Gdx.graphics.getWidth();
+    private float minY = 0f, maxY = Gdx.graphics.getHeight();
+
     // --- Graphics: Individual Textures for Directions ---
     // These are the "links" to your pictures!
     private Texture defaultTexture; // For idle, or when not explicitly moving
@@ -107,6 +110,13 @@ public class Player extends Actor { // <--- KEY CHANGE: Player now extends Actor
         this.attackTimer = attackCooldown;
     }
 
+    public void setMovementBounds(float minX, float maxX, float minY, float maxY) {
+        this.minX = minX;
+        this.maxX = maxX;
+        this.minY = minY;
+        this.maxY = maxY;
+    }
+
     /**
      * Overrides Actor's `act` method. This method is called automatically by the Stage
      * every frame, serving as the update loop for the Player's logic.
@@ -153,7 +163,14 @@ public class Player extends Actor { // <--- KEY CHANGE: Player now extends Actor
         // --- Synchronize internal position with Actor's position ---
         // After updating the internal 'position' Vector2, update the Actor's
         // position using setPosition(). This is how Scene2D knows where to draw it.
-        setPosition(position.x, position.y); // <--- Using Actor's setPosition
+//        setPosition(position.x, position.y); // <--- Using Actor's setPosition
+
+        // Clamp posisi ke dalam batas arena
+        float clampedX = Math.min(Math.max(position.x, minX), maxX - getWidth());
+        float clampedY = Math.min(Math.max(position.y, minY), maxY - getHeight());
+        position.set(clampedX, clampedY);
+        setPosition(clampedX, clampedY);
+
         // Always update the player's collision bounds after changing position
         bounds.setPosition(getX(), getY()); // <--- Using Actor's getX/getY
 

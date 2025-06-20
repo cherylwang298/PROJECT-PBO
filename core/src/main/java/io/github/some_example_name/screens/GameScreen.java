@@ -66,6 +66,25 @@
             );
     //        player.setScale(0.2f);
             player.setSize(64, 64);
+
+            float paddingX = 65f;
+            float paddingTop = 300f;
+            float paddingBottom = 400f;
+//            player.setMovementBounds(
+//                paddingX,
+//                Gdx.graphics.getWidth() - paddingX,
+//                paddingY,
+//                Gdx.graphics.getHeight() - paddingY
+//            );
+            player.setMovementBounds(
+                paddingX,                                // minX
+                Gdx.graphics.getWidth() - paddingX,     // maxX
+                paddingBottom,                              // minY
+                Gdx.graphics.getHeight() - paddingTop       // maxY
+            );
+
+
+
             stage.addActor(player); // Add the player to the stage AFTER the background
 
             // 3. Pause Button and Table (should be on top of game elements)
