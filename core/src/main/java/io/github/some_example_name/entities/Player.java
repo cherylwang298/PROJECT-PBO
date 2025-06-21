@@ -160,10 +160,7 @@ public class Player extends Actor { // <--- KEY CHANGE: Player now extends Actor
             currentActiveTexture = defaultTexture;
         }
 
-        // --- Synchronize internal position with Actor's position ---
-        // After updating the internal 'position' Vector2, update the Actor's
-        // position using setPosition(). This is how Scene2D knows where to draw it.
-//        setPosition(position.x, position.y); // <--- Using Actor's setPosition
+        //        setPosition(position.x, position.y); // <--- Using Actor's setPosition
 
         // Clamp posisi ke dalam batas arena
         float clampedX = Math.min(Math.max(position.x, minX), maxX - getWidth());
