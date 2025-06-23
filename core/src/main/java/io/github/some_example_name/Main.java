@@ -2,6 +2,7 @@ package io.github.some_example_name;
 
 import com.badlogic.gdx.Game;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import io.github.some_example_name.screens.GameOverScreen;
 import io.github.some_example_name.screens.GameScreen;
 import io.github.some_example_name.screens.HomeScreen;
 
@@ -14,6 +15,10 @@ public class Main extends Game {
         batch = new SpriteBatch();
         setScreen(new HomeScreen(this)); // mulai dengan HomeScreen
     }
+//    @Override
+//    public void create() {
+////        setScreen(new GameOverScreen(this));
+//    }
 
     @Override
     public void render() {
