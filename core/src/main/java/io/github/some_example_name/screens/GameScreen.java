@@ -135,9 +135,6 @@
                     heartImages.add(heart);
                 }
 
-
-
-
             }
 
             @Override
