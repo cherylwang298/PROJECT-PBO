@@ -6,6 +6,7 @@
         import com.badlogic.gdx.Screen;
         import com.badlogic.gdx.graphics.GL20; // Added for screen clearing
         import com.badlogic.gdx.graphics.Texture;
+        import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
         import com.badlogic.gdx.scenes.scene2d.Stage;
         import com.badlogic.gdx.scenes.scene2d.ui.Image;
         import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
@@ -28,6 +29,8 @@
             private Texture pauseTexture;
             private Stage stage;
 
+            private ShapeRenderer shapeRenderer;
+
             private ImageButton pauseButton;
             private Cell<ImageButton> pauseCell;
             private Table table;
@@ -47,6 +50,10 @@
 
                 // Set up stage (for UI and now your Player Actor)
                 stage = new Stage(new ScreenViewport());
+
+                shapeRenderer = new ShapeRenderer();
+
+
                 // CRITICAL: Set input processor to the stage so it can handle input for Actors (like your Player)
                 Gdx.input.setInputProcessor(stage);
 
@@ -156,6 +163,8 @@
                 stage.act(delta);
                 stage.draw();
 
+                drawPlayerHealthBar();
+
                 // If you want to handle player attack input (e.g., Spacebar) directly from GameScreen,
                 // you would add it AFTER stage.act(delta) but before stage.draw() if it impacts rendering
                 // or just after stage.act(delta) if it only updates internal state.
@@ -195,4 +204,27 @@
     //            pauseTexture.dispose();
     //            player.dispose(); // Dispose the player's textures
             }
+
+            private void drawPlayerHealthBar() {
+                float hpPercent = player.getHp() / player.getMaxHp();
+
+                float x = player.getX();
+                float y = player.getY() + player.getHeight() + 5; // 5 pixel di atas kepala
+                float width = player.getWidth();
+                float height = 6;
+
+                shapeRenderer.begin(ShapeRenderer.ShapeType.Filled);
+
+                // Merah (background)
+                shapeRenderer.setColor(1, 0, 0, 1);
+                shapeRenderer.rect(x, y, width, height);
+
+                // Hijau (sisa HP)
+                shapeRenderer.setColor(0, 1, 0, 1);
+                shapeRenderer.rect(x, y, width * hpPercent, height);
+
+                shapeRenderer.end();
+            }
+
+
         }
