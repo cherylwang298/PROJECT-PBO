@@ -24,7 +24,7 @@ public class Goblin extends Monsters {
 
         this.health = 50;
         this.speed = 70.0f;
-        this.damage = 5;
+        this.Damage = 5; //aku ganti dari damage -> Damage (cheryl)
         this.isAggressive = false;  // by default goblin is passive
 
         try {

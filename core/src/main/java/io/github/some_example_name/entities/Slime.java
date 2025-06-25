@@ -20,13 +20,16 @@ public class Slime extends Monsters {
 
     private boolean reachedWaypoint = false;
 
+//    private int Damage;
+
     public Slime(float x, float y) {
         super(x, y);
 
         this.health = 30;
         this.speed = 60.0f;
-        this.damage = 0;
+        this.Damage = 1;
         this.isAggressive = false;
+
 
         try {
             slimeFront = new Texture(Gdx.files.internal("slimeFront.png"));
