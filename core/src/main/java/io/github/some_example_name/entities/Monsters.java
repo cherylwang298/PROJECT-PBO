@@ -14,6 +14,8 @@
 //        this.y = y;
 //    }
 //
+
+
 //    public abstract void update(float deltaTime);
 //    public abstract void render(SpriteBatch batch);
 //    public abstract void onHit(Player player);
