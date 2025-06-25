@@ -22,7 +22,7 @@ public abstract class Monsters {
     }
 
     public boolean hasReachedCity() {
-        float cityBoundaryY = 750;
+        float cityBoundaryY = 760;
 
         return y <= cityBoundaryY;
     }

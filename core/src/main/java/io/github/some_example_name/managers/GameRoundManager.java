@@ -1,4 +1,3 @@
-
 package io.github.some_example_name.managers;
 
 import com.badlogic.gdx.Gdx;
@@ -21,21 +20,13 @@ public class GameRoundManager {
 
     private final List<RoundConfig> allRounds;
     private int currentRoundIndex;
+    private final Array<Monsters> activeMonsters;
 
-    private Array<Monsters> activeMonsters;
     private boolean roundActive;
-
-    private int currentWaveIndex;
-    private int monstersSpawnedInCurrentWave;
-    private float spawnTimer;
-    private final float SPAWN_INTERVAL = 0.5f;
-
-    private MonsterSpawnConfig currentSpawnConfig;
+    private boolean roundStarted = false;
 
     private CityHealthListener cityHealthListener;
-
-    // Arena padding bawah untuk cek monster keluar arena
-    private final float paddingBottom = Gdx.graphics.getHeight() * 0.35f;
+    private final float paddingBottom = Gdx.graphics.getHeight() * 0.4f; //cheryl edit
 
     public GameRoundManager(Main game, Player player) {
         this.game = game;
@@ -65,6 +56,8 @@ public class GameRoundManager {
     }
 
     public void startRound(int roundIndex) {
+        if (roundStarted) return;
+
         if (roundIndex < 0 || roundIndex >= allRounds.size()) {
             Gdx.app.error("GameRoundManager", "Invalid round index: " + roundIndex);
             return;
@@ -73,16 +66,67 @@ public class GameRoundManager {
         this.currentRoundIndex = roundIndex;
         activeMonsters.clear();
         roundActive = true;
-        currentWaveIndex = 0;
-        monstersSpawnedInCurrentWave = 0;
-        spawnTimer = 0f;
+        roundStarted = true;
 
-        Gdx.app.log("GameRoundManager", "Starting Round " + getCurrentRoundNumber());
+        RoundConfig round = allRounds.get(currentRoundIndex);
+        for (MonsterSpawnConfig config : round.getSpawnWaves()) {
+            spawnAllMonstersNow(config);
+        }
+    }
 
-        if (!allRounds.get(currentRoundIndex).getSpawnWaves().isEmpty()) {
-            currentSpawnConfig = allRounds.get(currentRoundIndex).getSpawnWaves().get(currentWaveIndex);
-        } else {
-            endRound();
+    private void spawnAllMonstersNow(MonsterSpawnConfig config) {
+        Class<? extends Monsters> monsterClass = config.getMonsterType();
+        int count = config.getCount();
+
+        int[] spawnCountPerDoor = new int[3]; // Track jumlah slime dari tiap pintu
+
+        for (int i = 0; i < count; i++) {
+            int randomIndex = (int) (Math.random() * 3); // 0–2 (pintu)
+            int offsetY = spawnCountPerDoor[randomIndex] * 20; // geser posisi spawn kalau dobel
+            spawnCountPerDoor[randomIndex]++;
+            spawnMonster(monsterClass, randomIndex, offsetY);
+        }
+    }
+
+    private void spawnMonster(Class<? extends Monsters> monsterClass, int index, float spawnOffsetY) {
+        try {
+            float screenW = Gdx.graphics.getWidth();
+            float screenH = Gdx.graphics.getHeight();
+
+            float[][] spawnPoints = new float[][] {
+                { screenW * 0.27f, screenH * 0.74f }, // kiri
+                { screenW * 0.49f, screenH * 0.71f }, // tengah
+                { screenW * 0.72f, screenH * 0.74f }  // kanan
+            };
+
+            float baseExitX = screenW * 0.50f;
+            float baseExitY = screenH * 0.08f;
+
+            float offsetX = (float) (Math.random() * 100 - 50); // -50 to +50
+            float offsetY = (float) (Math.random() * 40 - 20);  // -20 to +20
+
+            float finalExitX = baseExitX + offsetX;
+            float finalExitY = baseExitY + offsetY;
+
+            int safeIndex = index % spawnPoints.length;
+            float spawnX = spawnPoints[safeIndex][0];
+            float spawnY = spawnPoints[safeIndex][1] + spawnOffsetY;
+
+            Monsters monster;
+
+            if (monsterClass == Slime.class) {
+                monster = new Slime(spawnX, spawnY, finalExitX, finalExitY);
+            } else {
+                monster = monsterClass.getConstructor(float.class, float.class)
+                    .newInstance(spawnX, spawnY);
+            }
+
+            activeMonsters.add(monster);
+            Gdx.app.log("GameRoundManager", "Spawned " + monsterClass.getSimpleName() +
+                " at (" + (int)spawnX + ", " + (int)spawnY + ") targeting (" +
+                (int)finalExitX + ", " + (int)finalExitY + ")");
+        } catch (Exception e) {
+            Gdx.app.error("GameRoundManager", "Failed to spawn monster", e);
         }
     }
 
@@ -92,27 +136,14 @@ public class GameRoundManager {
             Monsters monster = iterator.next();
             if (monster.isAlive()) {
                 monster.update(deltaTime, player);
-//tambah logic buat ngurangin hati di gamescreen
-                if (monster.hasReachedCity()) {
-                    Gdx.app.log("GameRoundManager", "Monster reached city, damage = " + monster.getDamage());
-                    // Informasikan ke listener kalau monster sudah sampai kota
+
+                if (monster.hasReachedCity() || monster.getY() <= paddingBottom) {
                     if (cityHealthListener != null) {
                         cityHealthListener.onMonsterReachedCity(monster.getDamage());
                     }
                     monster.kill();
+                    Gdx.app.log("GameRoundManager", "Monster reached city or exited arena.");
                 }
-
-                // Cek apakah monster keluar arena (bawah)
-                if (monster.getY() <= paddingBottom) {
-                    // Monster keluar arena, langsung hilang & kurangi hearts
-                    monster.kill();
-                    if (cityHealthListener != null) {
-                        cityHealthListener.onMonsterReachedCity(monster.getDamage());
-                    }
-                    Gdx.app.log("GameRoundManager", "Monster keluar arena, hearts dikurangi.");
-                }
-
-//                sampe sini
 
             } else {
                 monster.dispose();
@@ -121,54 +152,8 @@ public class GameRoundManager {
             }
         }
 
-        // Spawn logic
-        if (roundActive) {
-            if (currentSpawnConfig != null) {
-                if (monstersSpawnedInCurrentWave < currentSpawnConfig.getCount()) {
-                    spawnTimer += deltaTime;
-                    if (spawnTimer >= SPAWN_INTERVAL) {
-                        spawnMonster(currentSpawnConfig.getMonsterType());
-                        monstersSpawnedInCurrentWave++;
-                        spawnTimer = 0f;
-                    }
-                } else {
-                    currentWaveIndex++;
-                    if (currentWaveIndex < allRounds.get(currentRoundIndex).getSpawnWaves().size()) {
-                        currentSpawnConfig = allRounds.get(currentRoundIndex).getSpawnWaves().get(currentWaveIndex);
-                        monstersSpawnedInCurrentWave = 0;
-                        spawnTimer = 0f;
-                    } else {
-                        currentSpawnConfig = null;
-                    }
-                }
-            }
-
-            if (currentSpawnConfig == null && activeMonsters.isEmpty()) {
-                endRound();
-            }
-        }
-    }
-
-    private void spawnMonster(Class<? extends Monsters> monsterClass) {
-        try {
-            float arenaMarginX = Gdx.graphics.getWidth() * 0.20f;
-            float arenaMarginTop = Gdx.graphics.getHeight() * 0.40f;
-            float arenaMarginBottom = Gdx.graphics.getHeight() * 0.35f;
-
-            float arenaMinX = arenaMarginX;
-            float arenaMaxX = Gdx.graphics.getWidth() - arenaMarginX;
-            float arenaMinY = arenaMarginBottom;
-            float arenaMaxY = Gdx.graphics.getHeight() - arenaMarginTop;
-
-            float spawnX = arenaMinX + (float)(Math.random() * (arenaMaxX - arenaMinX));
-            float spawnY = arenaMinY + (float)(Math.random() * (arenaMaxY - arenaMinY));
-
-            Monsters monster = monsterClass.getConstructor(float.class, float.class).newInstance(spawnX, spawnY);
-            activeMonsters.add(monster);
-
-            Gdx.app.log("GameRoundManager", "Spawned " + monsterClass.getSimpleName() + " at (" + spawnX + ", " + spawnY + ")");
-        } catch (Exception e) {
-            Gdx.app.error("GameRoundManager", "Failed to spawn monster: " + e.getMessage());
+        if (roundActive && activeMonsters.isEmpty()) {
+            endRound();
         }
     }
 
@@ -185,6 +170,7 @@ public class GameRoundManager {
 
     public void startNextRound() {
         if (currentRoundIndex + 1 < allRounds.size()) {
+            roundStarted = false;
             startRound(currentRoundIndex + 1);
         } else {
             Gdx.app.log("GameRoundManager", "All rounds completed. You win!");
