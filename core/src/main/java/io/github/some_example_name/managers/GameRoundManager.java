@@ -1,6 +1,7 @@
 package io.github.some_example_name.managers;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.utils.Array;
 
@@ -28,6 +29,12 @@ public class GameRoundManager {
     private CityHealthListener cityHealthListener;
     private final float paddingBottom = Gdx.graphics.getHeight() * 0.4f; //cheryl edit
 
+//    cheryl
+    private Texture roundStartTexture;
+    private boolean showRoundStart = false;
+    private float roundStartTimer = 0f;
+    private final float ROUND_START_DURATION = 2f; // 2 detik
+
     public GameRoundManager(Main game, Player player) {
         this.game = game;
         this.player = player;
@@ -35,6 +42,8 @@ public class GameRoundManager {
         this.activeMonsters = new Array<>();
         this.currentRoundIndex = 0;
         this.roundActive = false;
+
+        roundStartTexture = new Texture(Gdx.files.internal("round1.png")); // pastikan file berada di assets/
 
         initializeRounds();
     }
@@ -68,10 +77,13 @@ public class GameRoundManager {
         roundActive = true;
         roundStarted = true;
 
-        RoundConfig round = allRounds.get(currentRoundIndex);
-        for (MonsterSpawnConfig config : round.getSpawnWaves()) {
-            spawnAllMonstersNow(config);
-        }
+        showRoundStart = true;
+        roundStartTimer = 0f;
+
+//        RoundConfig round = allRounds.get(currentRoundIndex);
+//        for (MonsterSpawnConfig config : round.getSpawnWaves()) {
+//            spawnAllMonstersNow(config);
+//        }
     }
 
     private void spawnAllMonstersNow(MonsterSpawnConfig config) {
@@ -130,7 +142,54 @@ public class GameRoundManager {
         }
     }
 
+//    public void update(float deltaTime) {
+//
+//
+//        Iterator<Monsters> iterator = activeMonsters.iterator();
+//        while (iterator.hasNext()) {
+//            Monsters monster = iterator.next();
+//            if (monster.isAlive()) {
+//                monster.update(deltaTime, player);
+//
+//                if (monster.hasReachedCity() || monster.getY() <= paddingBottom) {
+//                    if (cityHealthListener != null) {
+//                        cityHealthListener.onMonsterReachedCity(monster.getDamage());
+//                    }
+//                    monster.kill();
+//                    Gdx.app.log("GameRoundManager", "Monster reached city or exited arena.");
+//                }
+//
+//            } else {
+//                monster.dispose();
+//                iterator.remove();
+//                Gdx.app.log("GameRoundManager", "Monster defeated and removed.");
+//            }
+//        }
+//
+//        if (roundActive && activeMonsters.isEmpty()) {
+//            endRound();
+//        }
+//    }
+
     public void update(float deltaTime) {
+//cheryl
+        // Tampilkan round start image sebelum spawn monster
+        if (showRoundStart) {
+            roundStartTimer += deltaTime;
+            if (roundStartTimer >= ROUND_START_DURATION) {
+                showRoundStart = false;
+
+                // Setelah delay selesai, baru spawn monster
+                RoundConfig round = allRounds.get(currentRoundIndex);
+                for (MonsterSpawnConfig config : round.getSpawnWaves()) {
+                    spawnAllMonstersNow(config);
+                }
+            }
+
+            return; // Jangan update monster dulu saat masih tampil "Round"
+        }
+
+        // Update monster seperti biasa
         Iterator<Monsters> iterator = activeMonsters.iterator();
         while (iterator.hasNext()) {
             Monsters monster = iterator.next();
@@ -157,12 +216,20 @@ public class GameRoundManager {
         }
     }
 
+
     private void endRound() {
         roundActive = false;
         Gdx.app.log("GameRoundManager", "Round " + getCurrentRoundNumber() + " complete!");
     }
 
     public void render(SpriteBatch batch) {
+//        cheryl - temp
+        if (showRoundStart && roundStartTexture != null) {
+            float centerX = Gdx.graphics.getWidth() / 2f - roundStartTexture.getWidth() / 2f;
+            float centerY = Gdx.graphics.getHeight() / 2f - roundStartTexture.getHeight() / 2f;
+            batch.draw(roundStartTexture, centerX, centerY);
+        }
+
         for (Monsters monster : activeMonsters) {
             monster.render(batch);
         }
@@ -178,6 +245,10 @@ public class GameRoundManager {
     }
 
     public void dispose() {
+//        temp cheryl
+        if (roundStartTexture != null) {
+            roundStartTexture.dispose();
+        }
         for (Monsters monster : activeMonsters) {
             monster.dispose();
         }
