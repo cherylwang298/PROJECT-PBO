@@ -27,8 +27,10 @@ public class Goblin extends Monsters {
         super(x, y);
 
         this.health = 40;
-        this.speed = 50.0f;
-        this.damage = 5;
+        this.speed = 160.0f;
+        this.maxHealth = 40;
+        this.damageToplayer = 5;
+        this.damageTocity = 1;
         this.isAggressive = false;
 
         try {

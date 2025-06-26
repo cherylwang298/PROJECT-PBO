@@ -32,15 +32,17 @@ public class Zombie extends Monsters {
         super(x, y);
 
         this.health = 60;
-        this.speed = 40.0f;
-        this.damage = 5;
+        this.maxHealth = 60;  //buat maxhealth healthbar
+        this.speed = 20.0f;
+        this.damageToplayer = 5; //toplayer: yang diterima player kalau kenak attack
+        this.damageTocity = 1;
         this.isAggressive = true;
         this.attackRadius = 999f; // seluruh arena
 
         try {
             front1 = new Texture(Gdx.files.internal("zombieFront1.png"));
             front2 = new Texture(Gdx.files.internal("zombieFront2.png"));
-            left1 = new Texture(Gdx.files.internal("zombieLeft1.png"));
+            left1 = new Texture(Gdx.files.internal("zombieLeft1.jpeg"));
             right1 = new Texture(Gdx.files.internal("zombieRight1.png"));
             currentTexture = front1;
         } catch (Exception e) {
@@ -123,9 +125,10 @@ public class Zombie extends Monsters {
         if (isPlayerInRange(player)) {
             attackTimer += deltaTime;
             if (attackTimer >= attackCooldown) {
-                player.takeDamage(damage);
+                player.takeDamage(damageToplayer);
                 attackTimer = 0f;
-                Gdx.app.log("Zombie", "Attacked player for " + damage + " damage!");
+                //ganti jadi damageToplayer y ges
+                Gdx.app.log("Zombie", "Attacked player for " + damageToplayer + " damage!");
             }
         }
 

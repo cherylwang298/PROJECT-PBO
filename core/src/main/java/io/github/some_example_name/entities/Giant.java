@@ -32,8 +32,10 @@ public class Giant extends Monsters {
         super(x, y);
 
         this.health = 80;
+        this.maxHealth = 80;  //buat maxhealth healthbar
         this.speed = 60f;
-        this.damage = 20;
+        this.damageToplayer = 20; //sama
+        this.damageTocity = 1;
         this.attackRadius = 999f;
         this.isAggressive = true;
 
@@ -120,12 +122,13 @@ public class Giant extends Monsters {
             currentTexture = toggleFrame ? front1 : front2;
         }
 
+        //ada edit dikit
         if (isPlayerInRange(player)) {
             attackTimer += deltaTime;
             if (attackTimer >= attackCooldown) {
-                player.takeDamage(damage);
+                player.takeDamage(damageToplayer);
                 attackTimer = 0f;
-                Gdx.app.log("Giant", "Attacked player for " + damage + " damage!");
+                Gdx.app.log("Giant", "Attacked player for " + damageToplayer + " damage!");
             }
         }
 

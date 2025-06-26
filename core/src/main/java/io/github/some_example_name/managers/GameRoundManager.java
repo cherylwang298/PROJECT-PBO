@@ -3,11 +3,13 @@ package io.github.some_example_name.managers;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.utils.Array;
 
 import io.github.some_example_name.Main;
 import io.github.some_example_name.entities.*;
 import io.github.some_example_name.screens.GameOverScreen;
+import io.github.some_example_name.screens.VictoryScreen;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -40,7 +42,7 @@ public class GameRoundManager {
         this.currentRoundIndex = 0;
         this.roundActive = false;
 
-        roundStartTexture = new Texture(Gdx.files.internal("round1.png"));
+//        roundStartTexture = new Texture(Gdx.files.internal("round1.png"));//test rouond 1
         initializeRounds();
     }
 
@@ -83,6 +85,19 @@ public class GameRoundManager {
         Gdx.app.log("GameRoundManager", "Rounds initialized: " + allRounds.size());
     }
 
+//    public void startRound(int roundIndex) {
+//        if (roundStarted) return;
+//        if (roundIndex < 0 || roundIndex >= allRounds.size()) return;
+//
+//        this.currentRoundIndex = roundIndex;
+//        activeMonsters.clear();
+//        roundActive = true;
+//        roundStarted = true;
+//
+//        showRoundStart = true;
+//        roundStartTimer = 0f;
+//    }
+
     public void startRound(int roundIndex) {
         if (roundStarted) return;
         if (roundIndex < 0 || roundIndex >= allRounds.size()) return;
@@ -92,9 +107,25 @@ public class GameRoundManager {
         roundActive = true;
         roundStarted = true;
 
+        // SET GAMBAR BERDASARKAN RONDE
+        int roundNum = allRounds.get(roundIndex).getRoundNumber();
+        String textureFile = "Round" + roundNum + ".png";
+
+        // Dispose texture lama kalau ada
+        if (roundStartTexture != null) roundStartTexture.dispose();
+
+        try {
+            roundStartTexture = new Texture(Gdx.files.internal(textureFile));
+            Gdx.app.log("GameRoundManager", "Loaded texture: " + textureFile);
+        } catch (Exception e) {
+            Gdx.app.error("GameRoundManager", "Failed to load texture for round: " + roundNum, e);
+            roundStartTexture = null; // supaya tidak crash saat render
+        }
+
         showRoundStart = true;
         roundStartTimer = 0f;
     }
+
 
     private void spawnAllMonstersNow(MonsterSpawnConfig config) {
         Class<? extends Monsters> monsterClass = config.getMonsterType();
@@ -138,6 +169,7 @@ public class GameRoundManager {
                 monster = new Zombie(spawnX, spawnY, finalExitX, finalExitY);
             } else if (monsterClass == Buffalo.class) {
                 monster = new Buffalo(spawnX, spawnY, finalExitX, finalExitY);
+                Gdx.app.log("GameRoundManager", "Created Buffalo!");
             } else {
                 Gdx.app.error("GameRoundManager", "Unsupported monster type");
                 return;
@@ -168,11 +200,21 @@ public class GameRoundManager {
             Monsters monster = iterator.next();
             if (monster.isAlive()) {
                 monster.update(deltaTime, player);
+
+                //checl klw player hp <= 0 juga game over: edit cher
+                if (player.getHp() <= 0) {
+                    Gdx.app.log("GameRoundManager", "Game Over! Player mati.");
+                    gameOver();
+                    return;
+                }
+
+
+
                 if (monster.hasReachedCity() || monster.getY() <= paddingBottom) {
                     if (cityHealthListener != null) {
-                        cityHealthListener.onMonsterReachedCity(monster.getDamage());
+                        cityHealthListener.onMonsterReachedCity(monster.getDamageTocity());
                     }
-                    cityHearts -= monster.getDamage();
+                    cityHearts -= monster.getDamageTocity();
                     Gdx.app.log("GameRoundManager", "City hearts: " + cityHearts);
                     monster.kill();
 
@@ -187,7 +229,26 @@ public class GameRoundManager {
             }
         }
 
+//        if (roundActive && activeMonsters.isEmpty()) {
+//            if (cityHearts <= 0) {
+//                gameOver();
+//            } else {
+//                endRound();
+//                startNextRound();
+//            }
+//        }
+
+        //check menang/ga di round 5
         if (roundActive && activeMonsters.isEmpty()) {
+            boolean isFinalRound = getCurrentRoundNumber() == 5;
+            boolean cityAlive = cityHearts >= 1;
+            boolean playerAlive = player.getHp() > 0;
+
+            if (isFinalRound && cityAlive && playerAlive) {
+                victory();
+                return;
+            }
+
             if (cityHearts <= 0) {
                 gameOver();
             } else {
@@ -195,10 +256,13 @@ public class GameRoundManager {
                 startNextRound();
             }
         }
+
+
     }
 
     private void endRound() {
         roundActive = false;
+        roundStarted = false; //coba
         Gdx.app.log("GameRoundManager", "Round " + getCurrentRoundNumber() + " complete!");
     }
 
@@ -207,6 +271,14 @@ public class GameRoundManager {
         Gdx.app.log("GameRoundManager", "Game Over! City hearts habis.");
         game.setScreen(new GameOverScreen(game));
     }
+
+    //kalau menang: victory scree ny dteigger
+    private void victory() {
+        roundActive = false;
+        Gdx.app.log("GameRoundManager", "Victory! Player & city survived final round.");
+        game.setScreen(new VictoryScreen(game));
+    }
+
 
     public void render(SpriteBatch batch) {
         if (showRoundStart && roundStartTexture != null) {
@@ -217,6 +289,7 @@ public class GameRoundManager {
 
         for (Monsters monster : activeMonsters) {
             monster.render(batch);
+            monster.renderHealthBar(batch);
         }
     }
 
@@ -228,6 +301,39 @@ public class GameRoundManager {
             Gdx.app.log("GameRoundManager", "All rounds completed. You win!");
         }
     }
+
+//    public void handleClick(float x, float y) {
+//        for (Monsters monster : activeMonsters) {
+//            if (monster.isAlive() && monster.contains(x, y)) {
+//                int damagePlayer = (int) player.getDamage();
+//                monster.takeDamage(damagePlayer);
+//                Gdx.app.log("GameRoundManager", "Monster clicked and took " + damagePlayer + " damage.");
+//                break; // hanya satu monster yang terkena klik
+//            }
+//        }
+//    }
+
+    public void handleClick(float x, float y) {
+        Rectangle attackBox = player.getAttackRect();
+
+        for (Monsters monster : activeMonsters) {
+            if (monster.isAlive() && monster.contains(x, y)) {
+                // Tambahan: hanya jika monster berada di dalam area serang depan
+                Rectangle monsterRect = new Rectangle(monster.getX(), monster.getY(), monster.getWidth(), monster.getHeight());
+
+                if (attackBox.overlaps(monsterRect)) {
+                    int damagePlayer = (int) player.getDamage();
+                    monster.takeDamage(damagePlayer);
+                    Gdx.app.log("GameRoundManager", "Monster clicked and took " + damagePlayer + " damage.");
+                    break; // satu monster saja
+                } else {
+                    Gdx.app.log("GameRoundManager", "Monster diklik tapi tidak di depan player.");
+                }
+            }
+        }
+    }
+
+
 
     public void dispose() {
         if (roundStartTexture != null) roundStartTexture.dispose();

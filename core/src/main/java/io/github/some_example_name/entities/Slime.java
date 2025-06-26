@@ -372,8 +372,9 @@ public class Slime extends Monsters {
         super(x, y);
 
         this.health = 30;
+        this.maxHealth=30;  //buat maxhealth healthbar
         this.speed = 60.0f;
-        this.damage = 1;
+        this.damageTocity = 1;
         this.isAggressive = false;
 
         try {

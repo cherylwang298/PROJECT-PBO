@@ -276,7 +276,7 @@ public class Player extends Actor { // <--- KEY CHANGE: Player now extends Actor
     }
 
     public float getDamage() {
-        return damage;
+        return this.damage;
     }
 
     // This getter returns the internal position Vector2.
@@ -295,5 +295,20 @@ public class Player extends Actor { // <--- KEY CHANGE: Player now extends Actor
 
     public boolean isAttacking() {
         return isAttacking;
+    }
+
+//cher
+//    attack distance dari player ny
+    public Rectangle getAttackRect() {
+        float attackRange = 80f; // atau sesuaikan dengan range serangan player
+        float px = getX() + getWidth() / 2;
+        float py = getY() + getHeight() / 2;
+
+        return new Rectangle(px - attackRange / 2, py, attackRange, attackRange); // area depan player
+    }
+
+    //: buat loot: not sure ini jalan atau ga
+    public Rectangle getBoundingRect() {
+        return new Rectangle(getX(), getY(), getWidth(), getHeight());
     }
 }

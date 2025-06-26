@@ -67,7 +67,7 @@ public class GameScreen implements Screen {
         player = new Player(
             100, // hp
             200, // speed
-            10,  // damage
+            40,  // damage
             Gdx.graphics.getWidth() / 2 - 32,
             Gdx.graphics.getHeight() / 2 - 32
         );
@@ -147,6 +147,13 @@ public class GameScreen implements Screen {
 
         stage.act(delta);
         roundManager.update(delta);
+
+        if (Gdx.input.justTouched()) {
+            float mouseX = Gdx.input.getX();
+            float mouseY = Gdx.graphics.getHeight() - Gdx.input.getY(); // konversi Y dari atas ke bawah
+
+            roundManager.handleClick(mouseX, mouseY);
+        }
 
         stage.draw();
 
