@@ -373,7 +373,7 @@ public class Slime extends Monsters {
 
         this.health = 30;
         this.speed = 60.0f;
-        this.Damage = 1;
+        this.damage = 1;
         this.isAggressive = false;
 
         try {

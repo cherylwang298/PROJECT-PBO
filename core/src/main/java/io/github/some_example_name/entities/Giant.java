@@ -5,15 +5,17 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 
-public class Goblin extends Monsters {
+import java.util.Random;
+
+public class Giant extends Monsters {
 
     private Texture front1, front2;
-    private Texture left1, left2;
-    private Texture right1, right2;
+    private Texture left1;
+    private Texture right1;
     private Texture currentTexture;
 
     private float animationTimer = 0f;
-    private final float FRAME_DURATION = 0.2f;
+    private final float FRAME_DURATION = 0.25f;
     private boolean toggleFrame = false;
 
     private float exitX, exitY;
@@ -21,35 +23,37 @@ public class Goblin extends Monsters {
     private boolean useWaypoint = true;
     private boolean reachedWaypoint = false;
 
-    private boolean aggro = false;
+    private final float attackCooldown = 1.5f;
+    private float attackTimer = 0f;
 
-    public Goblin(float x, float y) {
+    private final Random random = new Random();
+
+    public Giant(float x, float y) {
         super(x, y);
 
-        this.health = 40;
-        this.speed = 50.0f;
-        this.damage = 5;
-        this.isAggressive = false;
+        this.health = 80;
+        this.speed = 60f;
+        this.damage = 20;
+        this.attackRadius = 999f;
+        this.isAggressive = true;
 
         try {
-            front1 = new Texture(Gdx.files.internal("goblinFront1.png"));
-            front2 = new Texture(Gdx.files.internal("goblinfront2.png"));
-            left1 = new Texture(Gdx.files.internal("goblinLeft1.png"));
-            left2 = new Texture(Gdx.files.internal("goblinLeft2.png"));
-            right1 = new Texture(Gdx.files.internal("goblinRight1.png"));
-            right2 = new Texture(Gdx.files.internal("goblinRight2.png"));
+            front1 = new Texture(Gdx.files.internal("giantFront1.png"));
+            front2 = new Texture(Gdx.files.internal("giantFront2.png"));
+            left1  = new Texture(Gdx.files.internal("giantLeft1.png"));
+            right1 = new Texture(Gdx.files.internal("giantRight1.png"));
             currentTexture = front1;
         } catch (Exception e) {
-            Gdx.app.error("Goblin", "Failed to load goblin textures.");
-            front1 = front2 = left1 = left2 = right1 = right2 = new Texture("placeholder.png");
+            Gdx.app.error("Giant", "Failed to load textures. Check asset names.");
+            front1 = front2 = left1 = right1 = new Texture("placeholder.png");
             currentTexture = front1;
         }
 
-        this.setSize(64, 64);
+        setSize(96, 96);
         assignRandomExitWithWaypoint();
     }
 
-    public Goblin(float x, float y, float exitX, float exitY) {
+    public Giant(float x, float y, float exitX, float exitY) {
         this(x, y);
         this.exitX = exitX;
         this.exitY = exitY;
@@ -111,30 +115,51 @@ public class Goblin extends Monsters {
         y += move.y * speed * deltaTime;
 
         if (Math.abs(move.x) > Math.abs(move.y)) {
-            currentTexture = (move.x > 0) ? (toggleFrame ? right1 : right2) : (toggleFrame ? left1 : left2);
+            currentTexture = (move.x > 0) ? right1 : left1;
         } else {
-            currentTexture = (toggleFrame ? front1 : front2);
+            currentTexture = toggleFrame ? front1 : front2;
         }
 
-        if (!aggro && isReachedExit()) {
-            this.health = 0;
+        if (isPlayerInRange(player)) {
+            attackTimer += deltaTime;
+            if (attackTimer >= attackCooldown) {
+                player.takeDamage(damage);
+                attackTimer = 0f;
+                Gdx.app.log("Giant", "Attacked player for " + damage + " damage!");
+            }
         }
-    }
 
-    private boolean isReachedExit() {
-        return Vector2.dst(x + width / 2, y + height / 2, exitX, exitY) < 20f;
+        if (hasReachedCity()) {
+            kill();
+        }
     }
 
     @Override
     public void onHit(Player player) {
         health -= 10;
-        aggro = true;
-        Gdx.app.log("Goblin", "Hit! Health: " + health);
+        Gdx.app.log("Giant", "Hit! Health: " + health);
+
+        if (health <= 0) {
+            int roll = random.nextInt(3);
+            switch (roll) {
+                case 0:
+                    player.takeDamage(-20);
+                    Gdx.app.log("Loot", "Player gained +20 HP!");
+                    break;
+                case 1:
+                    Gdx.app.log("Loot", "Player speed boosted! (placeholder)");
+                    break;
+                case 2:
+                    Gdx.app.log("Loot", "Player gained +7 damage! (placeholder)");
+                    break;
+            }
+            kill();
+        }
     }
 
     @Override
     public boolean shouldAttackPlayer(Player player) {
-        return aggro;
+        return true;
     }
 
     @Override
@@ -145,13 +170,12 @@ public class Goblin extends Monsters {
     @Override
     public void dispose() {
         front1.dispose(); front2.dispose();
-        left1.dispose(); left2.dispose();
-        right1.dispose(); right2.dispose();
+        left1.dispose();
+        right1.dispose();
     }
 
-    @Override public float getWidth() { return width; }
-    @Override public float getHeight() { return height; }
-    @Override public void setSize(float width, float height) {
+    @Override
+    public void setSize(float width, float height) {
         this.width = width;
         this.height = height;
     }
