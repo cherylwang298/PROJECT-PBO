@@ -26,8 +26,8 @@ public class Goblin extends Monsters {
     public Goblin(float x, float y) {
         super(x, y);
 
-        this.health = 40;
-        this.speed = 160.0f;
+        this.health = 70;
+        this.speed = 155.0f;
         this.maxHealth = 40;
         this.damageToplayer = 5;
         this.damageTocity = 1;
@@ -167,4 +167,5 @@ public class Goblin extends Monsters {
     public void kill() {
         this.health = 0;
     }
+
 }

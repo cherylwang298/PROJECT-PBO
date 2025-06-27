@@ -34,8 +34,8 @@
             this.attackDelay = 1.5f;
             this.health = 60;
             this.maxHealth = 60;  //buat maxhealth healthbar
-            this.speed = 20.0f;
-            this.damageToplayer = 5; //toplayer: yang diterima player kalau kenak attack
+            this.speed = 50.0f;
+            this.damageToplayer = 15; //toplayer: yang diterima player kalau kenak attack
             this.damageTocity = 1;
             this.isAggressive = true;
 

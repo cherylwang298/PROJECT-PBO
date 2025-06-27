@@ -102,7 +102,7 @@ public abstract class Monsters {
         float barHeight = 5f;
         float hpPercent = (float) health / maxHealth;
 
-        float xBar = x;
+        float xBar = x + (width - barWidth) / 2;
         float yBar = y + height + 4;
 
         // Merah (background)
