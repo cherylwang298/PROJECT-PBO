@@ -22,6 +22,7 @@ public class Loot {
         this.texture = new Texture(Gdx.files.internal(type + ".png")); // contoh: gold.png, potion.png
     }
 
+    //buat ngeluarin aset looting nya
     public void render(SpriteBatch batch) {
         batch.draw(texture, x, y, width, height);
     }
