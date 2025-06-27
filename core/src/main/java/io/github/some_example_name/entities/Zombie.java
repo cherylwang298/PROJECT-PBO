@@ -86,57 +86,6 @@
             }
         }
 
-    //    @Override
-    //    public void update(float deltaTime, Player player) {
-    //        animationTimer += deltaTime;
-    //        if (animationTimer >= FRAME_DURATION) {
-    //            toggleFrame = !toggleFrame;
-    //            animationTimer = 0f;
-    //        }
-    //
-    //        float centerX = x + width / 2;
-    //        float centerY = y + height / 2;
-    //
-    //        Vector2 target = new Vector2(
-    //            (!useWaypoint || reachedWaypoint) ? player.getX() : waypointX,
-    //            (!useWaypoint || reachedWaypoint) ? player.getY() : waypointY
-    //        );
-    //
-    //        Vector2 move = new Vector2(target.x - centerX, target.y - centerY);
-    //
-    //        if (move.len() < 5f) {
-    //            if (useWaypoint && !reachedWaypoint) {
-    //                reachedWaypoint = true;
-    //            } else {
-    //                move.setZero();
-    //            }
-    //        } else {
-    //            move.nor();
-    //        }
-    //
-    //        x += move.x * speed * deltaTime;
-    //        y += move.y * speed * deltaTime;
-    //
-    //        if (Math.abs(move.x) > Math.abs(move.y)) {
-    //            currentTexture = (move.x > 0) ? right1 : left1;
-    //        } else {
-    //            currentTexture = toggleFrame ? front2 : front1;
-    //        }
-    //
-    //        if (isPlayerInRange(player)) {
-    //            attackTimer += deltaTime;
-    //            if (attackTimer >= attackCooldown) {
-    //                player.takeDamage(damageToplayer);
-    //                attackTimer = 0f;
-    //                //ganti jadi damageToplayer y ges
-    //                Gdx.app.log("Zombie", "Attacked player for " + damageToplayer + " damage!");
-    //            }
-    //        }
-    //
-    //        if (hasReachedCity()) {
-    //            kill();
-    //        }
-    //    }
 
         @Override
         public void update(float deltaTime, Player player) {

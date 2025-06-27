@@ -55,15 +55,27 @@ public class VictoryScreen extends BaseScreen {
         float titleHeight = titleWidth * 0.45f;
 
         // Table layout
+//        Table table = new Table();
+//        table.setFillParent(true);
+//        table.center().top().padTop(Gdx.graphics.getHeight() * 0.15f); // posisinya responsive
+//
+//        table.add(titleImage).size(titleWidth, titleHeight).padBottom(Gdx.graphics.getHeight() * 0.04f);
+//        table.row();
+//        table.add(retryButton).size(buttonWidth, buttonHeight).padBottom(Gdx.graphics.getHeight() * 0.02f);
+//        table.row();
+//        table.add(homeButton).size(buttonWidth, buttonHeight);
+//
+        // Table layout
         Table table = new Table();
         table.setFillParent(true);
-        table.center().top().padTop(Gdx.graphics.getHeight() * 0.15f); // posisinya responsive
+        table.center().top().padTop(Gdx.graphics.getHeight() * 0.12f); // sedikit lebih naik
 
-        table.add(titleImage).size(titleWidth, titleHeight).padBottom(Gdx.graphics.getHeight() * 0.04f);
+        table.add(titleImage).size(titleWidth, titleHeight); // kurangin jarak
         table.row();
-        table.add(retryButton).size(buttonWidth, buttonHeight).padBottom(Gdx.graphics.getHeight() * 0.02f);
+        table.add(retryButton).size(buttonWidth, buttonHeight).padBottom(0.05f); // tombol lebih rapat
         table.row();
-        table.add(homeButton).size(buttonWidth, buttonHeight);
+        table.add(homeButton).size(buttonWidth, buttonHeight); // tombol exit lebih naik
+
 
         stage.addActor(table);
     }

@@ -129,7 +129,7 @@ public class Goblin extends Monsters {
 
     @Override
     public void onHit(Player player) {
-        health -= 10;
+        health -= -10;
         aggro = true;
         Gdx.app.log("Goblin", "Hit! Health: " + health);
     }

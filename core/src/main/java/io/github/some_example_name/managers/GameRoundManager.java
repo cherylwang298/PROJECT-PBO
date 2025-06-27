@@ -209,7 +209,6 @@ public class GameRoundManager {
                 }
 
 
-
                 if (monster.hasReachedCity() || monster.getY() <= paddingBottom) {
                     if (cityHealthListener != null) {
                         cityHealthListener.onMonsterReachedCity(monster.getDamageTocity());

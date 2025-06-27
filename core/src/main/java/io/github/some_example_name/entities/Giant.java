@@ -85,119 +85,6 @@ public class Giant extends Monsters {
         }
     }
 
-//    @Override
-//    public void update(float deltaTime, Player player) {
-//        animationTimer += deltaTime;
-//        if (animationTimer >= FRAME_DURATION) {
-//            toggleFrame = !toggleFrame;
-//            animationTimer = 0f;
-//        }
-//
-//        float centerX = x + width / 2;
-//        float centerY = y + height / 2;
-//
-//        Vector2 target = new Vector2(
-//            (!useWaypoint || reachedWaypoint) ? exitX : waypointX,
-//            (!useWaypoint || reachedWaypoint) ? exitY : waypointY
-//        );
-//
-//        Vector2 move = new Vector2(target.x - centerX, target.y - centerY);
-//
-//        if (move.len() < 5f) {
-//            if (useWaypoint && !reachedWaypoint) {
-//                reachedWaypoint = true;
-//            } else {
-//                move.setZero();
-//            }
-//        } else {
-//            move.nor();
-//        }
-//
-//        x += move.x * speed * deltaTime;
-//        y += move.y * speed * deltaTime;
-//
-//        if (Math.abs(move.x) > Math.abs(move.y)) {
-//            currentTexture = (move.x > 0) ? right1 : left1;
-//        } else {
-//            currentTexture = toggleFrame ? front1 : front2;
-//        }
-//
-//
-//
-//        //ada edit dikit
-//        if (isPlayerInRange(player)) {
-//            attackTimer += deltaTime;
-//            if (attackTimer >= attackCooldown) {
-//                player.takeDamage(damageToplayer);
-//                attackTimer = 0f;
-//                Gdx.app.log("Giant", "Attacked player for " + damageToplayer + " damage!");
-//            }
-//        }
-//
-//        if (hasReachedCity()) {
-//            kill();
-//        }
-//    }
-
-//    @Override
-//    public void update(float deltaTime, Player player) {
-//        animationTimer += deltaTime;
-//        if (animationTimer >= FRAME_DURATION) {
-//            toggleFrame = !toggleFrame;
-//            animationTimer = 0f;
-//        }
-//
-//        updateAttackCooldown(deltaTime);
-//
-//        if (isPlayerInRange(player)) {
-//            // Stop bergerak, serang player
-//            attackPlayer(player);
-//            return; // skip movement
-//        }
-//
-//        // Tidak dalam jarak attack → gerak ke player
-//        if (isAggressive) {
-//            moveTowardPlayer(player, deltaTime);
-//
-//        } else {
-////            currentTexture = toggleFrame ? front1 : front2;
-//
-//            // Non-agresif jalan ke exit (jika perlu)
-//            float centerX = x + width / 2;
-//            float centerY = y + height / 2;
-//
-//            Vector2 target = new Vector2(
-//                (!useWaypoint || reachedWaypoint) ? exitX : waypointX,
-//                (!useWaypoint || reachedWaypoint) ? exitY : waypointY
-//            );
-//
-//            Vector2 move = new Vector2(target.x - centerX, target.y - centerY);
-//
-//            if (move.len() < 5f) {
-//                if (useWaypoint && !reachedWaypoint) {
-//                    reachedWaypoint = true;
-//                } else {
-//                    move.setZero();
-//                }
-//            } else {
-//                move.nor();
-//            }
-//
-//            x += move.x * speed * deltaTime;
-//            y += move.y * speed * deltaTime;
-//
-//            if (Math.abs(move.x) > Math.abs(move.y)) {
-//                currentTexture = (move.x > 0) ? right1 : left1;
-//            } else {
-//                currentTexture = toggleFrame ? front1 : front2;
-//            }
-//        }
-//
-//        if (hasReachedCity()) {
-//            kill();
-//        }
-//    }
-
     @Override
     public void update(float deltaTime, Player player) {
         animationTimer += deltaTime;
@@ -231,11 +118,9 @@ public class Giant extends Monsters {
         }
     }
 
-
-
     @Override
     public void onHit(Player player) {
-        health -= 10;
+        health -= (int)player.getDamage();
         Gdx.app.log("Giant", "Hit! Health: " + health);
 
         if (health <= 0) {
