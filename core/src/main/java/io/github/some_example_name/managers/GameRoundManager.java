@@ -364,6 +364,47 @@ public class GameRoundManager {
         }
     }
 
+    /**
+     * Handles a player attack triggered by a keyboard input (e.g., 'K' key).
+     * This method will damage all monsters that are currently within the player's attack range.
+     */
+    public void handleKeyboardAttack() {
+        // Ensure player is not null before attempting to get its attack rect
+        if (player == null) {
+            Gdx.app.error("GameRoundManager", "Player object is null, cannot process keyboard attack.");
+            return;
+        }
+
+        // Get the player's predefined attack range. This is the area where the attack hits.
+        Rectangle playerAttackRange = player.getAttackRect();
+
+        // Iterate through all currently active monsters
+        // Use an iterator to safely remove monsters if they die during the loop
+        Iterator<Monsters> iterator = activeMonsters.iterator();
+        while (iterator.hasNext()) {
+            Monsters monster = iterator.next();
+            if (monster.isAlive()) {
+                // Create a rectangle for the monster's current bounding box
+                Rectangle monsterRect = new Rectangle(monster.getX(), monster.getY(), monster.getWidth(), monster.getHeight());
+
+                // Check if the player's attack range overlaps with the monster's bounding box
+                if (playerAttackRange.overlaps(monsterRect)) {
+                    // If they overlap, the monster takes damage from the player
+                    int damagePlayer = (int) player.getDamage();
+                    monster.takeDamage(damagePlayer);
+                    Gdx.app.log("GameRoundManager", "Monster hit by keyboard attack and took " + damagePlayer + " damage.");
+
+                    // If the monster dies from this hit, increment the killed counter
+                    if (!monster.isAlive()){
+                        monstersKilledByPlayer++;
+                        Gdx.app.log("GameRoundManager", "Monster Killed by Player. Total: " + monstersKilledByPlayer);
+                        // No explicit remove here, as the main update loop handles removal of dead monsters
+                    }
+                    // IMPORTANT: No 'break;' here. A keyboard attack can hit multiple monsters in its range.
+                }
+            }
+        }
+    }
 
 
     public void dispose() {

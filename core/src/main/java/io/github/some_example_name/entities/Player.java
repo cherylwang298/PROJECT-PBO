@@ -4,21 +4,21 @@ package io.github.some_example_name.entities;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.Batch; // IMPORTANT: Changed from SpriteBatch to Batch for Actor's draw method
-import com.badlogic.gdx.scenes.scene2d.Actor; // IMPORTANT: New import for Actor base class
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.math.Rectangle;
 import com.badlogic.gdx.math.Vector2;
 
 /**
  * The Player class represents the Gladiator character in the game.
- * IT NOW EXTENDS SCENE2D'S ACTOR. This allows it to be managed and rendered
- * directly by a LibGDX Stage, which is used in your GameScreen.
+ * It extends Scene2D's Actor to integrate with a LibGDX Stage.
  *
  * This class manages the player's core attributes (HP, Speed, Damage),
  * its position and collision, handles movement input, basic attack actions,
- * taking damage, and dynamically changes its sprite based on direction.
+ * taking damage, and dynamically changes its sprite based on direction
+ * and attack state.
  */
-public class Player extends Actor { // <--- KEY CHANGE: Player now extends Actor
+public class Player extends Actor {
 
     // --- Player Core Properties ---
     private float hp;
@@ -27,40 +27,47 @@ public class Player extends Actor { // <--- KEY CHANGE: Player now extends Actor
     private float damage;
 
     // --- Player Position & Collision ---
-    // We use a private Vector2 for internal position calculations, then synchronize
-    // it with the Actor's built-in position (getX(), getY(), setPosition())
     private Vector2 position;
-    private Rectangle bounds; // Collision box for the player
+    private Rectangle bounds;
 
     private float minX = 0f, maxX = Gdx.graphics.getWidth();
     private float minY = 0f, maxY = Gdx.graphics.getHeight();
 
-    // --- Graphics: Individual Textures for Directions ---
-    // These are the "links" to your pictures!
-    private Texture defaultTexture; // For idle, or when not explicitly moving
+    // --- Graphics: Textures for Movement and Attack Animations ---
+    private Texture defaultTexture;
     private Texture upTexture;
     private Texture downTexture;
     private Texture leftTexture;
     private Texture rightTexture;
 
-    // The currently active texture to draw
+    // New Textures for Attack Animations
+    private Texture attackUpTexture; // This will now load 'attackUpswordUp.png'
+    private Texture attackDownTexture;
+    private Texture attackLeftTexture;
+    private Texture attackRightTexture;
+
+    // Currently active texture to draw
     private Texture currentActiveTexture;
+    // Stores the last non-attacking texture, useful for reverting after attack
+    private Texture lastMovementTexture;
 
-    // --- Animation & Combat (keeping the structure for future use, but simplified now) ---
-    // For now, we won't have animations like walk cycles from a sheet,
-    // but just switch textures based on direction.
+    // --- Animation & Combat States ---
     private boolean facingRight; // True if player is facing right, false if facing left
-
-    // Combat related
     private boolean isAttacking;
-    private Rectangle attackHitbox;
     private float attackDuration;
     private float attackCooldown;
-    private float attackTimer;
+    private float attackTimer; // Used for both attack duration and cooldown
+    private AttackDirection lastAttackDirection; // To remember which attack animation to show
+
+    // Enum to clearly define attack directions for animation purposes
+    public enum AttackDirection {
+        UP, DOWN, LEFT, RIGHT, NONE
+    }
 
     /**
      * Constructor for the Player Actor.
-     * Initializes player stats, position, and loads all individual directional sprite textures.
+     * Initializes player stats, position, and loads all individual sprite textures,
+     * including those for attack animations.
      *
      * @param initialHp The player's starting and maximum health points.
      * @param initialSpeed The player's initial movement speed.
@@ -78,36 +85,40 @@ public class Player extends Actor { // <--- KEY CHANGE: Player now extends Actor
         // Initialize internal position Vector2
         this.position = new Vector2(startX, startY);
 
-        // --- Load Individual Textures (THIS IS WHERE YOU LINK THE PICTURES) ---
-        // Make sure these file names exactly match what's in your 'core/assets' folder!
-        this.defaultTexture = new Texture("gladiator_default.png");
+        // --- Load Movement Textures ---
+        this.defaultTexture = new Texture("gladiator_default.png"); // Assuming you have a default idle texture
         this.upTexture = new Texture("gladiator_up.png");
         this.downTexture = new Texture("gladiator_down.png");
         this.leftTexture = new Texture("gladiator_left.png");
         this.rightTexture = new Texture("gladiator_right.png");
 
+        // --- Load Attack Textures (Corrected attackUpTexture loading) ---
+        this.attackUpTexture = new Texture("attackUpswordUp.png"); // Changed from attackUpswordUp.png
+        this.attackDownTexture = new Texture("attackDown.png"); // This remains correct
+        this.attackLeftTexture = new Texture("attackLeft.png");
+        this.attackRightTexture = new Texture("attackRight.png");
+
         // Set initial active texture to default
         this.currentActiveTexture = this.defaultTexture;
+        this.lastMovementTexture = this.defaultTexture; // Initialize last movement texture
         facingRight = true; // Default facing direction
+        lastAttackDirection = AttackDirection.NONE;
 
         // Set the Actor's dimensions using the default texture's size.
-        // These methods are inherited from Actor and are crucial for Stage management.
-        setWidth(defaultTexture.getWidth());  // <--- Using Actor's setWidth
-        setHeight(defaultTexture.getHeight());// <--- Using Actor's setHeight
+        setWidth(defaultTexture.getWidth());
+        setHeight(defaultTexture.getHeight());
 
         // Set the Actor's initial position.
-        // This is where Stage will draw the actor.
-        setPosition(startX, startY); // <--- Using Actor's setPosition
+        setPosition(startX, startY);
 
         // Initialize player's main collision bounds using Actor's position and dimensions
-        this.bounds = new Rectangle(getX(), getY(), getWidth(), getHeight()); // <--- Using Actor's getX/Y/Width/Height
+        this.bounds = new Rectangle(getX(), getY(), getWidth(), getHeight());
 
         // Combat related initialization
         this.isAttacking = false;
-        this.attackHitbox = new Rectangle(0, 0, 0, 0);
-        this.attackDuration = 0.2f;
-        this.attackCooldown = 0.5f;
-        this.attackTimer = attackCooldown;
+        this.attackDuration = 0.2f; // How long the attack animation plays
+        this.attackCooldown = 0.5f; // How long until the player can attack again after finishing an attack
+        this.attackTimer = attackCooldown; // Start ready to attack
     }
 
     public void setMovementBounds(float minX, float maxX, float minY, float maxY) {
@@ -125,96 +136,117 @@ public class Player extends Actor { // <--- KEY CHANGE: Player now extends Actor
      */
     @Override
     public void act(float delta) {
-        super.act(delta); // IMPORTANT: Always call the superclass's act method for Actor's built-in functionality.
+        super.act(delta); // IMPORTANT: Always call the superclass's act method.
 
         float moveAmount = speed * delta;
         boolean movedThisFrame = false; // Flag to check if any movement occurred
+        Texture intendedMovementTexture = defaultTexture; // Default if no movement
 
         // Handle player movement based on WASD keyboard input.
-        // We use Gdx.input directly here for responsiveness.
+        // We capture the intended movement texture first.
         if (Gdx.input.isKeyPressed(Input.Keys.W)) { // Move Up
             position.y += moveAmount;
-            currentActiveTexture = upTexture;
+            intendedMovementTexture = upTexture;
             movedThisFrame = true;
+            // Update lastAttackDirection based on movement
+            if (!isAttacking) this.lastAttackDirection = AttackDirection.UP;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.S)) { // Move Down
             position.y -= moveAmount;
-            currentActiveTexture = downTexture;
+            intendedMovementTexture = downTexture;
             movedThisFrame = true;
+            // Update lastAttackDirection based on movement
+            if (!isAttacking) this.lastAttackDirection = AttackDirection.DOWN;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.A)) { // Move Left
             position.x -= moveAmount;
-            currentActiveTexture = leftTexture;
+            intendedMovementTexture = leftTexture;
             facingRight = false; // Player faces left
             movedThisFrame = true;
+            // Update lastAttackDirection based on movement
+            if (!isAttacking) this.lastAttackDirection = AttackDirection.LEFT;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.D)) { // Move Right
             position.x += moveAmount;
-            currentActiveTexture = rightTexture;
+            intendedMovementTexture = rightTexture;
             facingRight = true; // Player faces right
             movedThisFrame = true;
+            // Update lastAttackDirection based on movement
+            if (!isAttacking) this.lastAttackDirection = AttackDirection.RIGHT;
         }
 
-        // If no movement keys are pressed and not attacking, revert to the default/idle texture.
-        if (!movedThisFrame && !isAttacking) {
-            currentActiveTexture = defaultTexture;
-        }
-
-        //        setPosition(position.x, position.y); // <--- Using Actor's setPosition
-
-        // Clamp posisi ke dalam batas arena
+        // Clamp position to within arena bounds
         float clampedX = Math.min(Math.max(position.x, minX), maxX - getWidth());
         float clampedY = Math.min(Math.max(position.y, minY), maxY - getHeight());
         position.set(clampedX, clampedY);
-        setPosition(clampedX, clampedY);
+        setPosition(clampedX, clampedY); // Synchronize Actor's position
+        bounds.setPosition(getX(), getY()); // Update collision bounds
 
-        // Always update the player's collision bounds after changing position
-        bounds.setPosition(getX(), getY()); // <--- Using Actor's getX/getY
-
-        // Handle player attack input (e.g., Spacebar)
-        if (Gdx.input.isKeyJustPressed(Input.Keys.SPACE)) {
-            attack();
-        }
-
-        // Manage the attack state and cooldown
+        // Manage the attack state and animation
         if (isAttacking) {
             attackTimer += delta;
             if (attackTimer >= attackDuration) {
-                isAttacking = false;
-                attackHitbox.setSize(0, 0); // Hide hitbox after attack duration
+                isAttacking = false; // Attack animation duration over
+                attackTimer = 0f; // Reset timer for cooldown
+                // Revert to the last movement texture or default after attack
+                currentActiveTexture = lastMovementTexture;
+            } else {
+                // If attacking, set the attack animation texture based on determined lastAttackDirection
+                switch (lastAttackDirection) {
+                    case UP:
+                        currentActiveTexture = attackUpTexture;
+                        break;
+                    case DOWN:
+                        currentActiveTexture = attackDownTexture;
+                        break;
+                    case LEFT:
+                        currentActiveTexture = attackLeftTexture;
+                        break;
+                    case RIGHT:
+                        currentActiveTexture = attackRightTexture;
+                        break;
+                    default:
+                        // Fallback, if lastAttackDirection is NONE, use facing direction for attack
+                        currentActiveTexture = facingRight ? attackRightTexture : attackLeftTexture;
+                        break;
+                }
             }
         } else {
-            // If not attacking, continue advancing the timer for cooldown
+            // If not attacking, advance the cooldown timer
             if (attackTimer < attackCooldown) {
                 attackTimer += delta;
+            }
+
+            // Update current texture based on movement only if not attacking
+            if (!isAttacking) {
+                if (movedThisFrame) {
+                    currentActiveTexture = intendedMovementTexture;
+                    lastMovementTexture = intendedMovementTexture; // Store for later reversion
+                } else {
+                    // If not moving, and not attacking, revert to default idle texture
+                    currentActiveTexture = defaultTexture;
+                    lastMovementTexture = defaultTexture; // Store for later reversion
+                }
             }
         }
     }
 
     /**
      * Initiates the player's attack action.
-     * This method checks for cooldown and activates the attack hitbox.
+     * This method sets the internal `isAttacking` flag and resets the `attackTimer`.
+     * It relies on `lastAttackDirection` being set externally (e.g., by GameScreen
+     * based on mouse or default keyboard direction) for correct animation/hitbox.
      */
     public void attack() {
+        // Only allow attack if not currently attacking and cooldown is ready
         if (!isAttacking && attackTimer >= attackCooldown) {
             isAttacking = true;
-            attackTimer = 0f; // Reset timer for new attack's duration and cooldown
-            Gdx.app.log("Player", "Gladiator initiates attack.");
-
-            // Set up placeholder attack hitbox relative to Actor's position and size.
-            // Adjust these values to visually match your gladiator's weapon reach.
-            float hitboxX;
-            float hitboxWidth = getWidth() * 0.7f; // Example: 70% of player width
-            float hitboxHeight = getHeight() * 0.8f; // Example: 80% of player height
-
-            if (facingRight) {
-                hitboxX = getX() + getWidth() * 0.8f; // To the right of the player
-            } else {
-                hitboxX = getX() - hitboxWidth * 0.1f; // To the left of the player, slightly overlapping
-            }
-            attackHitbox.set(hitboxX, getY() + getHeight() * 0.1f, hitboxWidth, hitboxHeight); // <--- Using Actor's getX/Y/Width/Height
+            attackTimer = 0f; // Start duration timer
+            Gdx.app.log("Player", "Gladiator initiates attack animation.");
+            // The currentActiveTexture will be set in act(delta) based on lastAttackDirection
         }
     }
+
 
     /**
      * Reduces the player's current health points.
@@ -229,7 +261,7 @@ public class Player extends Actor { // <--- KEY CHANGE: Player now extends Actor
         Gdx.app.log("Player", "Gladiator took " + damageAmount + " damage. Current HP: " + hp);
         if (this.hp <= 0) {
             Gdx.app.log("Player", "Gladiator has fallen! Game Over.");
-            // TODO: Implement game over logic here.
+            // TODO: Implement game over logic here (likely handled by GameRoundManager or GameScreen).
         }
     }
 
@@ -241,11 +273,9 @@ public class Player extends Actor { // <--- KEY CHANGE: Player now extends Actor
      * @param parentAlpha The alpha (transparency) value inherited from parent Actors.
      */
     @Override
-    public void draw(Batch batch, float parentAlpha) { // <--- KEY CHANGE: draw method signature for Actor
+    public void draw(Batch batch, float parentAlpha) {
         // Draw the 'currentActiveTexture' at the Actor's position and dimensions.
-        // getX(), getY(), getWidth(), getHeight() are inherited methods from Actor.
-        // No need to manually flip here since you have separate left/right textures.
-        batch.draw(currentActiveTexture, getX(), getY(), getWidth(), getHeight()); // <--- Using Actor's getX/Y/Width/Height
+        batch.draw(currentActiveTexture, getX(), getY(), getWidth(), getHeight());
     }
 
     /**
@@ -259,10 +289,13 @@ public class Player extends Actor { // <--- KEY CHANGE: Player now extends Actor
         if (downTexture != null) downTexture.dispose();
         if (leftTexture != null) leftTexture.dispose();
         if (rightTexture != null) rightTexture.dispose();
+        if (attackUpTexture != null) attackUpTexture.dispose();
+        if (attackDownTexture != null) attackDownTexture.dispose();
+        if (attackLeftTexture != null) attackLeftTexture.dispose();
+        if (attackRightTexture != null) attackRightTexture.dispose();
     }
 
-    // --- Getter Methods (to allow other classes to access player's properties) ---
-    // Note: Actor already provides getX(), getY(), getWidth(), getHeight()
+    // --- Getter Methods ---
     public float getHp() {
         return hp;
     }
@@ -279,8 +312,6 @@ public class Player extends Actor { // <--- KEY CHANGE: Player now extends Actor
         return this.damage;
     }
 
-    // This getter returns the internal position Vector2.
-    // Use getX()/getY() for the Actor's actual position on stage.
     public Vector2 getPosition() {
         return position;
     }
@@ -289,29 +320,74 @@ public class Player extends Actor { // <--- KEY CHANGE: Player now extends Actor
         return bounds;
     }
 
-    public Rectangle getAttackHitbox() {
-        return attackHitbox;
-    }
-
     public boolean isAttacking() {
         return isAttacking;
     }
 
-//cher
-//    attack distance dari player ny
-    public Rectangle getAttackRect() {
-        float attackRange = 80f; // atau sesuaikan dengan range serangan player
-        float px = getX() + getWidth() / 2;
-        float py = getY() + getHeight() / 2;
-
-        return new Rectangle(px - attackRange / 2, py, attackRange, attackRange); // area depan player
+    /**
+     * Returns true if the player is currently facing right, false otherwise.
+     * This is useful for determining default attack direction when no movement input is given.
+     */
+    public boolean isFacingRight() { // Make this method public
+        return facingRight;
     }
 
-    //: buat loot: not sure ini jalan atau ga
+    /**
+     * Sets the intended direction for the player's next attack.
+     * This method is called externally (e.g., from GameScreen)
+     * to ensure the attack animation and hitbox align with player intent.
+     * @param direction The AttackDirection for the upcoming attack.
+     */
+    public void setAttackDirection(AttackDirection direction) { // New public method
+        this.lastAttackDirection = direction;
+    }
+
+
+    /**
+     * Returns the rectangle representing the player's attack range.
+     * This method is used by GameRoundManager to determine if monsters are hit.
+     * The dimensions and position of this rectangle should align with the visual attack.
+     */
+    public Rectangle getAttackRect() {
+        float attackRange = 80f; // Base range for the attack's reach
+
+        // Player's current position and dimensions
+        float px = getX();
+        float py = getY();
+        float pWidth = getWidth();
+        float pHeight = getHeight();
+
+        // Calculate the attack rectangle based on the stored lastAttackDirection
+        switch (lastAttackDirection) {
+            case UP:
+                // Attack range extends upwards from player's top edge
+                return new Rectangle(px, py + pHeight, pWidth, attackRange);
+            case DOWN:
+                // Attack range extends downwards from player's bottom edge
+                return new Rectangle(px, py - attackRange, pWidth, attackRange);
+            case LEFT:
+                // Attack range extends left from player's left edge
+                return new Rectangle(px - attackRange, py, attackRange, pHeight);
+            case RIGHT:
+                // Attack range extends right from player's right edge
+                return new Rectangle(px + pWidth, py, attackRange, pHeight);
+            default:
+                // Fallback: If no specific attack direction is set (e.g., from movement),
+                // default to a forward attack based on facing direction.
+                if (facingRight) {
+                    return new Rectangle(px + pWidth, py, attackRange, pHeight);
+                } else {
+                    return new Rectangle(px - attackRange, py, attackRange, pHeight);
+                }
+        }
+    }
+
+
     public Rectangle getBoundingRect() {
         return new Rectangle(getX(), getY(), getWidth(), getHeight());
     }
 
+    // --- Setter Methods ---
     public void setDamage(float damage) {
         this.damage = damage;
     }

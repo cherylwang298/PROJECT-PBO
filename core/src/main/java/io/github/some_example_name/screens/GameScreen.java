@@ -22,6 +22,7 @@ import com.badlogic.gdx.utils.Scaling;
 import io.github.some_example_name.Main;
 import io.github.some_example_name.entities.Player;
 import io.github.some_example_name.managers.GameRoundManager;
+import static io.github.some_example_name.entities.Player.AttackDirection; // Import the enum directly for cleaner code
 
 public class GameScreen implements Screen {
 
@@ -136,7 +137,6 @@ public class GameScreen implements Screen {
 
     @Override
     public void show() {
-        Gdx.input.setInputProcessor(stage);
         roundManager.startRound(0);
     }
 
@@ -148,11 +148,69 @@ public class GameScreen implements Screen {
         stage.act(delta);
         roundManager.update(delta);
 
+        // --- Handle Input for Attacks ---
+        // Mouse Click Attack
         if (Gdx.input.justTouched()) {
             float mouseX = Gdx.input.getX();
             float mouseY = Gdx.graphics.getHeight() - Gdx.input.getY(); // konversi Y dari atas ke bawah
 
+            // Calculate player's center for direction calculation
+            float playerCenterX = player.getX() + player.getWidth() / 2;
+            float playerCenterY = player.getY() + player.getHeight() / 2;
+
+            // Determine attack direction based on mouse position relative to player
+            float dirX = mouseX - playerCenterX;
+            float dirY = mouseY - playerCenterY;
+
+            AttackDirection calculatedDirection = AttackDirection.NONE;
+
+            // Use a simple comparison to determine the most dominant direction
+            // You can refine this with dead zones or specific angles if needed
+            if (Math.abs(dirX) > Math.abs(dirY)) { // More horizontal movement
+                if (dirX > 0) {
+                    calculatedDirection = AttackDirection.RIGHT;
+                } else {
+                    calculatedDirection = AttackDirection.LEFT;
+                }
+            } else { // More vertical movement, or purely vertical
+                if (dirY > 0) {
+                    calculatedDirection = AttackDirection.UP;
+                } else {
+                    calculatedDirection = AttackDirection.DOWN;
+                }
+            }
+
+            // Set the attack direction in the Player class before triggering the attack
+            player.setAttackDirection(calculatedDirection);
+
+            // 1. Trigger player's internal attack state (for animation/cooldown)
+            player.attack();
+            // 2. Pass the click coordinates to the round manager for damage calculation
             roundManager.handleClick(mouseX, mouseY);
+        }
+
+        // Keyboard 'K' Attack
+        if (Gdx.input.isKeyJustPressed(Input.Keys.K)) {
+            AttackDirection kAttackDirection = AttackDirection.NONE; // Initialize
+
+            // Prioritize vertical movement for K-attack direction
+            if (Gdx.input.isKeyPressed(Input.Keys.W)) {
+                kAttackDirection = AttackDirection.UP;
+            } else if (Gdx.input.isKeyPressed(Input.Keys.S)) {
+                kAttackDirection = AttackDirection.DOWN;
+            } else {
+                // If no vertical movement, default to DOWN attack
+                // This makes 'K' a general downward smash if not moving vertically
+                kAttackDirection = AttackDirection.DOWN;
+            }
+
+            // Set the attack direction in the Player class
+            player.setAttackDirection(kAttackDirection);
+
+            // 1. Trigger player's internal attack state (for animation/cooldown)
+            player.attack();
+            // 2. Tell the round manager to process a keyboard-triggered attack
+            roundManager.handleKeyboardAttack();
         }
 
         stage.draw();
@@ -217,23 +275,20 @@ public class GameScreen implements Screen {
         shapeRenderer.dispose();
         gameSpriteBatch.dispose();
     }
-    //logic buat hilangin hearts (cheryl)
+
     public void reduceCityHealth(int amount) {
         heartsRemaining -= amount;
         if (heartsRemaining < 0) heartsRemaining = 0;
 
-        // Hilangkan icon heart yang sudah gak dipakai
         for (int i = heartImages.size - 1; i >= heartsRemaining; i--) {
-            Image heartToRemove = heartImages.pop();
-            heartToRemove.remove(); // remove dari stage
+            if (i < heartImages.size) {
+                Image heartToRemove = heartImages.pop();
+                heartToRemove.remove();
+            }
         }
 
-        // Jika ingin, bisa cek game over di sini
         if (heartsRemaining == 0) {
-            // Panggil logic game over, misal:
             Gdx.app.log("GameScreen", "Game Over! Hearts habis.");
-            // game.setScreen(new GameOverScreen(game)); // contoh
         }
     }
-
 }
