@@ -59,7 +59,7 @@ public class Giant extends Monsters {
             currentTexture = front1;
         }
 
-        setSize(96, 96);
+        setSize(96, 106);
         assignRandomExitWithWaypoint();
     }
 

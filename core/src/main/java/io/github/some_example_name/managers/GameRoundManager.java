@@ -71,11 +71,11 @@ public class GameRoundManager {
     //cheryl: edit + monsters ke setiap rounds
     private void initializeRounds() {
         List<MonsterSpawnConfig> round1 = new ArrayList<>();
-    round1.add(new MonsterSpawnConfig(Slime.class, 5));
+        round1.add(new MonsterSpawnConfig(Slime.class, 5));
 //     round1.add(new MonsterSpawnConfig(Giant.class, 1));
         allRounds.add(new RoundConfig(1, round1));
 
-       List<MonsterSpawnConfig> round2 = new ArrayList<>();
+        List<MonsterSpawnConfig> round2 = new ArrayList<>();
         round2.add(new MonsterSpawnConfig(Slime.class, 3));
         round2.add(new MonsterSpawnConfig(Goblin.class, 2));
 //        round2.add(new MonsterSpawnConfig(Zombie.class, 3));
@@ -245,12 +245,12 @@ public class GameRoundManager {
                 Gdx.app.log("GameRoundManager", monster.getClass().getSimpleName()
                     + " is dead. killedByPlayer=" + killedByPlayer);
 
-                    if (monster.isKilledByPlayer()) {
-                        LootEffect lootEffect = monster.getValidLootEffect();
-                        if (lootEffect != null) {
-                            lootManager.spawnLoot(monster.getX(), monster.getY(), lootEffect);
-                        }
+                if (monster.isKilledByPlayer()) {
+                    LootEffect lootEffect = monster.getValidLootEffect();
+                    if (lootEffect != null) {
+                        lootManager.spawnLoot(monster.getX(), monster.getY(), lootEffect);
                     }
+                }
 
 
                 monster.dispose();
@@ -292,13 +292,14 @@ public class GameRoundManager {
     private void gameOver() {
         roundActive = false;
         Gdx.app.log("GameRoundManager", "Game Over! City hearts habis.");
+        game.pauseBGM(); // Stop the BGM when game over
         game.setScreen(new GameOverScreen(game));
     }
 
-    //kalau menang: victory scree ny dteigger
     private void victory() {
         roundActive = false;
         Gdx.app.log("GameRoundManager", "Victory! Player & city survived final round.");
+        game.pauseBGM(); // Stop the BGM also on victory
         game.setScreen(new VictoryScreen(game));
     }
 
@@ -341,11 +342,11 @@ public class GameRoundManager {
                     monster.takeDamage(damagePlayer);
                     //Gdx.app.log("GameRoundManager", "Monster clicked and took " + damagePlayer + " damage.");
 
-                   if (!monster.isAlive()){
-                       monster.setKilledByPlayer(true);
-                       monstersKilledByPlayer++;
-                      // Gdx.app.log("GameRoundManager", "Monster Killed by Player. Total: " + monstersKilledByPlayer);
-                   }
+                    if (!monster.isAlive()){
+                        monster.setKilledByPlayer(true);
+                        monstersKilledByPlayer++;
+                        // Gdx.app.log("GameRoundManager", "Monster Killed by Player. Total: " + monstersKilledByPlayer);
+                    }
 
                     break; // satu monster saja
                 } else {

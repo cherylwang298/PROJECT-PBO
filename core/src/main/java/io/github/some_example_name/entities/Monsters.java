@@ -65,7 +65,7 @@ public abstract class Monsters {
     public boolean isAlive() { return alive && health > 0; }
 
     public boolean hasReachedCity() {
-        float cityBoundaryY = 750; // adjust as needed
+        float cityBoundaryY = 720; // adjust as needed
         return y <= cityBoundaryY;
     }
 
@@ -163,14 +163,14 @@ public abstract class Monsters {
         this.killedByPlayer = killedByPlayer;
     }
 
-public LootEffect getValidLootEffect(){
+    public LootEffect getValidLootEffect(){
         if (isKilledByPlayer()){
             return getLootEffect();
         }
         else {
             return null;
         }
-}
+    }
 
 
 

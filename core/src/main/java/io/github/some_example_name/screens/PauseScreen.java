@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.Screen;
+import com.badlogic.gdx.audio.Sound; // IMPORTANT: Import Sound
 
 import io.github.some_example_name.Main;
 
@@ -22,13 +23,15 @@ public class PauseScreen extends BaseScreen {
     private Texture resumeTexture, exitTexture;
     private Texture overlayTexture;
 
+    private Sound clickSound; // Declare the sound object for button clicks
+
     public PauseScreen(Main game, Screen previousScreen) {
-        super(""); // tidak butuh background image, jadi dikosongkan
+        super(""); // does not need background image, so empty
 
         this.game = game;
         this.previousScreen = previousScreen;
 
-        // Background hitam transparan 50%
+        // Background black transparent 50%
         Pixmap pixmap = new Pixmap(1, 1, Format.RGBA8888);
         pixmap.setColor(0, 0, 0, 0.5f);
         pixmap.fill();
@@ -39,7 +42,7 @@ public class PauseScreen extends BaseScreen {
         overlay.setFillParent(true);
         stage.addActor(overlay);
 
-        // Load tombol
+        // Load buttons
         resumeTexture = new Texture("resumeButton.png");
         exitTexture = new Texture("exitButton.png");
 
@@ -49,25 +52,41 @@ public class PauseScreen extends BaseScreen {
         resumeButton.getImage().setScaling(Scaling.fit);
         exitButton.getImage().setScaling(Scaling.fit);
 
-        // Listener tombol Resume
+        // --- Load the button click sound ---
+        String clickSoundPath = "Button Click 1 (audio).MP3"; // Assuming it's directly in assets
+        try {
+            clickSound = Gdx.audio.newSound(Gdx.files.internal(clickSoundPath));
+            Gdx.app.log("PauseScreen", "Button click sound loaded successfully: " + clickSoundPath);
+        } catch (Exception e) {
+            Gdx.app.error("PauseScreen", "Failed to load button click sound '" + clickSoundPath + "': " + e.getMessage());
+            clickSound = null;
+        }
+
+        // Listener for Resume button
         resumeButton.addListener(new InputListener() {
             @Override public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) { return true; }
 
             @Override public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
-                game.setScreen(previousScreen); // kembali ke GameScreen
+                if (clickSound != null) { // Play sound when button is released
+                    clickSound.play(0.7f); // Play with 70% volume
+                }
+                game.setScreen(previousScreen); // return to GameScreen
             }
         });
 
-        // Listener tombol Exit
+        // Listener for Exit button
         exitButton.addListener(new InputListener() {
             @Override public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) { return true; }
 
             @Override public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                if (clickSound != null) { // Play sound when button is released
+                    clickSound.play(0.7f); // Play with 70% volume
+                }
                 game.setScreen(new HomeScreen(game));
             }
         });
 
-        // Layout tombol di tengah layar
+        // Layout buttons in the center of the screen
         Table table = new Table();
         table.setFillParent(true);
         table.center();
@@ -88,5 +107,11 @@ public class PauseScreen extends BaseScreen {
         overlayTexture.dispose();
         resumeTexture.dispose();
         exitTexture.dispose();
+
+        // IMPORTANT: Dispose the button click sound
+        if (clickSound != null) {
+            clickSound.dispose();
+            Gdx.app.log("PauseScreen", "Button click sound disposed.");
+        }
     }
 }

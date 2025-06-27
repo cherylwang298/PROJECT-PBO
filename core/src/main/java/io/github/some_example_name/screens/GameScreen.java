@@ -6,7 +6,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer; // Make sure this is imported
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
@@ -18,7 +18,8 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.utils.Scaling;
-import com.badlogic.gdx.math.Rectangle; // Make sure Rectangle is imported
+import com.badlogic.gdx.math.Rectangle;
+import com.badlogic.gdx.audio.Sound; // IMPORTANT: Import Sound
 
 import io.github.some_example_name.Main;
 import io.github.some_example_name.entities.Player;
@@ -32,7 +33,7 @@ public class GameScreen implements Screen {
     private Texture pauseTexture;
     private Stage stage;
     private SpriteBatch gameSpriteBatch;
-    private ShapeRenderer shapeRenderer; // Declared here
+    private ShapeRenderer shapeRenderer;
 
     private ImageButton pauseButton;
     private Cell<ImageButton> pauseCell;
@@ -43,7 +44,9 @@ public class GameScreen implements Screen {
 
     private Texture heartTexture;
     private Array<Image> heartImages = new Array<>();
-    private int heartsRemaining = 5; // jumlah nyawa kota, bisa disesuaikan
+    private int heartsRemaining = 5;
+
+    private Sound buttonClickSound; // Declare the sound object for button clicks
 
     public GameScreen(Main game) {
         this.game = game;
@@ -55,7 +58,7 @@ public class GameScreen implements Screen {
 
         stage = new Stage(new ScreenViewport());
         gameSpriteBatch = new SpriteBatch();
-        shapeRenderer = new ShapeRenderer(); // Initialized here
+        shapeRenderer = new ShapeRenderer();
 
         Gdx.input.setInputProcessor(stage);
 
@@ -88,6 +91,16 @@ public class GameScreen implements Screen {
 
         stage.addActor(player);
 
+        // --- Load the button click sound ---
+//        String clickSoundPath = "Button Click 1 (audio).MP3"; // Assuming it's directly in assets
+//        try {
+//            buttonClickSound = Gdx.audio.newSound(Gdx.files.internal(clickSoundPath));
+//            Gdx.app.log("GameScreen", "Button click sound loaded successfully: " + clickSoundPath);
+//        } catch (Exception e) {
+//            Gdx.app.error("GameScreen", "Failed to load button click sound '" + clickSoundPath + "': " + e.getMessage());
+//            buttonClickSound = null;
+//        }
+
         // Pause button UI
         pauseButton = new ImageButton(new TextureRegionDrawable(pauseTexture));
         pauseButton.addListener(new InputListener() {
@@ -98,6 +111,9 @@ public class GameScreen implements Screen {
 
             @Override
             public void touchUp(InputEvent event, float x, float y, int pointer, int button) {
+                if (buttonClickSound != null) { // Play sound when button is released
+                    buttonClickSound.play(0.7f); // Play with 70% volume
+                }
                 game.setScreen(new PauseScreen(game, GameScreen.this));
             }
         });
@@ -233,15 +249,18 @@ public class GameScreen implements Screen {
         drawPlayerHealthBar();
 
         // --- DEBUGGING: Draw Player Attack Hitbox (di player cari ATTACK_BOX_SIZE)---
-        // Only draw the hitbox if the player is currently in an attacking state
-//        if (player.isAttacking()) {
-//            shapeRenderer.setProjectionMatrix(stage.getCamera().combined);
-//            shapeRenderer.begin(ShapeRenderer.ShapeType.Line); // Use Line for outline
-//            shapeRenderer.setColor(1, 1, 0, 1); // Yellow color for hitbox
-//            Rectangle attackRect = player.getAttackRect();
-//            shapeRenderer.rect(attackRect.x, attackRect.y, attackRect.width, attackRect.height);
-//            shapeRenderer.end();
-//        }
+        // Uncomment this block in your GameScreen.render() if you want to visualize the player's attack hitbox.
+        // You will need to ensure 'game' has a ShapeRenderer getter, as commented out in GameRoundManager.
+        /*
+        if (player.isAttacking()) {
+            shapeRenderer.setProjectionMatrix(stage.getCamera().combined);
+            shapeRenderer.begin(ShapeRenderer.ShapeType.Line); // Use Line for outline
+            shapeRenderer.setColor(1, 1, 0, 1); // Yellow color for hitbox
+            Rectangle attackRect = player.getAttackRect();
+            shapeRenderer.rect(attackRect.x, attackRect.y, attackRect.width, attackRect.height);
+            shapeRenderer.end();
+        }
+        */
         // --- END DEBUGGING ---
 
         // Contoh pindah ronde dengan Enter jika ronde selesai
@@ -297,6 +316,12 @@ public class GameScreen implements Screen {
         roundManager.dispose();
         shapeRenderer.dispose();
         gameSpriteBatch.dispose();
+
+        // IMPORTANT: Dispose the button click sound for GameScreen
+        if (buttonClickSound != null) {
+            buttonClickSound.dispose();
+            Gdx.app.log("GameScreen", "Button click sound disposed.");
+        }
     }
 
     public void reduceCityHealth(int amount) {

@@ -59,7 +59,7 @@ public class Slime extends Monsters {
         float screenWidth = Gdx.graphics.getWidth();
         float screenHeight = Gdx.graphics.getHeight();
 
-        exitX = screenWidth * 0.50f;
+        exitX = screenWidth * 0.50f; // original = 0.50f
         exitY = screenHeight * 0.08f;
 
         int style = (int)(Math.random() * 3); // 0, 1, 2
