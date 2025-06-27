@@ -43,7 +43,7 @@
             try {
                 front1 = new Texture(Gdx.files.internal("zombieFront1.png"));
                 front2 = new Texture(Gdx.files.internal("zombieFront2.png"));
-                left1 = new Texture(Gdx.files.internal("zombieLeft1.jpeg"));
+                left1 = new Texture(Gdx.files.internal("zombieLeft1.png"));
                 right1 = new Texture(Gdx.files.internal("zombieRight1.png"));
                 currentTexture = front1;
             } catch (Exception e) {

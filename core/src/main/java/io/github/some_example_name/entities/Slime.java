@@ -23,8 +23,8 @@ public class Slime extends Monsters {
     public Slime(float x, float y) {
         super(x, y);
 
-        this.health = 30;
-        this.maxHealth=30;  //buat maxhealth healthbar
+        this.health = 80;
+        this.maxHealth=80;  //buat maxhealth healthbar
         this.speed = 60.0f;
         this.damageTocity = 1;
         this.isAggressive = false;

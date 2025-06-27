@@ -67,7 +67,7 @@ public class GameScreen implements Screen {
         player = new Player(
             100, // hp
             200, // speed
-            40,  // damage
+            20,  // damage
             Gdx.graphics.getWidth() / 2 - 32,
             Gdx.graphics.getHeight() / 2 - 32
         );

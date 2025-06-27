@@ -241,12 +241,12 @@ public class Buffalo extends Monsters {
         this.isAggressive = true;
 
         try {
-            front1 = new Texture(Gdx.files.internal("buffaloFront1.jpeg"));
-            front2 = new Texture(Gdx.files.internal("buffaloFront2.jpeg"));
-            right1 = new Texture(Gdx.files.internal("buffaloRight1.jpeg"));
-            right2 = new Texture(Gdx.files.internal("buffaloRight2.jpeg"));
-            left1 = new Texture(Gdx.files.internal("buffaloLeft1.jpeg"));
-            left2 = new Texture(Gdx.files.internal("buffaloLeft2.jpeg"));
+            front1 = new Texture(Gdx.files.internal("buffaloFront1.png"));
+            front2 = new Texture(Gdx.files.internal("buffaloFront2.png"));
+            right1 = new Texture(Gdx.files.internal("buffaloRight1.png"));
+            right2 = new Texture(Gdx.files.internal("buffaloRight2.png"));
+            left1 = new Texture(Gdx.files.internal("buffaloLeft1.png"));
+            left2 = new Texture(Gdx.files.internal("buffaloLeft2.png"));
             currentTexture = front1;
         } catch (Exception e) {
             front1 = front2 = right1 = right2 = left1 = left2 = new Texture("placeholder.png");

@@ -31,8 +31,8 @@ public class Giant extends Monsters {
     public Giant(float x, float y) {
         super(x, y);
 
-        this.health = 80;
-        this.maxHealth = 80;  //buat maxhealth healthbar
+        this.health = 120;
+        this.maxHealth = 120;  //buat maxhealth healthbar
         this.speed = 60f;
         this.damageToplayer = 20; //sama
         this.damageTocity = 1;

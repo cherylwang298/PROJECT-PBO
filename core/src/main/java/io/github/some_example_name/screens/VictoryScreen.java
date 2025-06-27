@@ -22,7 +22,7 @@ public class VictoryScreen extends BaseScreen {
         super("smallerOne.jpg");
         this.game = game;
 
-        retryTexture = new Texture("retryButton.png");
+        retryTexture = new Texture("playButtonP.png");
         homeTexture = new Texture("exitButton.png");
         titleTexture = new Texture("Victory.png");
 
