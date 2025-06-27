@@ -311,4 +311,20 @@ public class Player extends Actor { // <--- KEY CHANGE: Player now extends Actor
     public Rectangle getBoundingRect() {
         return new Rectangle(getX(), getY(), getWidth(), getHeight());
     }
+
+    public void setDamage(float damage) {
+        this.damage = damage;
+    }
+
+    public void setSpeed(float speed) {
+        this.speed = speed;
+    }
+
+    public void setMaxHp(float maxHp) {
+        this.maxHp = maxHp;
+    }
+
+    public void setHp(float hp) {
+        this.hp = hp;
+    }
 }
