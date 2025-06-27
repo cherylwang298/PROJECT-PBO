@@ -41,7 +41,7 @@ public class Player extends Actor {
     private Texture rightTexture;
 
     // New Textures for Attack Animations
-    private Texture attackUpTexture; // This will now load 'attackUpswordUp.png'
+    private Texture attackUpTexture;
     private Texture attackDownTexture;
     private Texture attackLeftTexture;
     private Texture attackRightTexture;
@@ -58,6 +58,9 @@ public class Player extends Actor {
     private float attackCooldown;
     private float attackTimer; // Used for both attack duration and cooldown
     private AttackDirection lastAttackDirection; // To remember which attack animation to show
+
+    // Define a consistent size for the attack hitbox, making it more effective for AoE
+    private final float ATTACK_BOX_SIZE = 80f; // Increased from 80f for better coverage
 
     // Enum to clearly define attack directions for animation purposes
     public enum AttackDirection {
@@ -92,9 +95,9 @@ public class Player extends Actor {
         this.leftTexture = new Texture("gladiator_left.png");
         this.rightTexture = new Texture("gladiator_right.png");
 
-        // --- Load Attack Textures (Corrected attackUpTexture loading) ---
-        this.attackUpTexture = new Texture("attackUpswordUp.png"); // Changed from attackUpswordUp.png
-        this.attackDownTexture = new Texture("attackDown.png"); // This remains correct
+        // --- Load Attack Textures ---
+        this.attackUpTexture = new Texture("attackUpswordUp.png"); // Corrected to use attackUpswordUp.png
+        this.attackDownTexture = new Texture("attackDown.png");
         this.attackLeftTexture = new Texture("attackLeft.png");
         this.attackRightTexture = new Texture("attackRight.png");
 
@@ -148,14 +151,14 @@ public class Player extends Actor {
             position.y += moveAmount;
             intendedMovementTexture = upTexture;
             movedThisFrame = true;
-            // Update lastAttackDirection based on movement
+            // Update lastAttackDirection based on movement, but not if already attacking
             if (!isAttacking) this.lastAttackDirection = AttackDirection.UP;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.S)) { // Move Down
             position.y -= moveAmount;
             intendedMovementTexture = downTexture;
             movedThisFrame = true;
-            // Update lastAttackDirection based on movement
+            // Update lastAttackDirection based on movement, but not if already attacking
             if (!isAttacking) this.lastAttackDirection = AttackDirection.DOWN;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.A)) { // Move Left
@@ -163,7 +166,7 @@ public class Player extends Actor {
             intendedMovementTexture = leftTexture;
             facingRight = false; // Player faces left
             movedThisFrame = true;
-            // Update lastAttackDirection based on movement
+            // Update lastAttackDirection based on movement, but not if already attacking
             if (!isAttacking) this.lastAttackDirection = AttackDirection.LEFT;
         }
         if (Gdx.input.isKeyPressed(Input.Keys.D)) { // Move Right
@@ -171,7 +174,7 @@ public class Player extends Actor {
             intendedMovementTexture = rightTexture;
             facingRight = true; // Player faces right
             movedThisFrame = true;
-            // Update lastAttackDirection based on movement
+            // Update lastAttackDirection based on movement, but not if already attacking
             if (!isAttacking) this.lastAttackDirection = AttackDirection.RIGHT;
         }
 
@@ -349,35 +352,31 @@ public class Player extends Actor {
      * The dimensions and position of this rectangle should align with the visual attack.
      */
     public Rectangle getAttackRect() {
-        float attackRange = 80f; // Base range for the attack's reach
+        float playerCenterX = getX() + getWidth() / 2;
+        float playerCenterY = getY() + getHeight() / 2;
 
-        // Player's current position and dimensions
-        float px = getX();
-        float py = getY();
-        float pWidth = getWidth();
-        float pHeight = getHeight();
+        float attackBoxHalfSize = ATTACK_BOX_SIZE / 2;
 
-        // Calculate the attack rectangle based on the stored lastAttackDirection
         switch (lastAttackDirection) {
             case UP:
-                // Attack range extends upwards from player's top edge
-                return new Rectangle(px, py + pHeight, pWidth, attackRange);
+                // Attack box centered horizontally with player, extends upwards from player's top edge
+                return new Rectangle(playerCenterX - attackBoxHalfSize, playerCenterY + getHeight() / 2, ATTACK_BOX_SIZE, ATTACK_BOX_SIZE);
             case DOWN:
-                // Attack range extends downwards from player's bottom edge
-                return new Rectangle(px, py - attackRange, pWidth, attackRange);
+                // Attack box centered horizontally with player, extends downwards from player's bottom edge
+                return new Rectangle(playerCenterX - attackBoxHalfSize, playerCenterY - getHeight() / 2 - ATTACK_BOX_SIZE, ATTACK_BOX_SIZE, ATTACK_BOX_SIZE);
             case LEFT:
-                // Attack range extends left from player's left edge
-                return new Rectangle(px - attackRange, py, attackRange, pHeight);
+                // Attack box centered vertically with player, extends left from player's left edge
+                return new Rectangle(playerCenterX - getWidth() / 2 - ATTACK_BOX_SIZE, playerCenterY - attackBoxHalfSize, ATTACK_BOX_SIZE, ATTACK_BOX_SIZE);
             case RIGHT:
-                // Attack range extends right from player's right edge
-                return new Rectangle(px + pWidth, py, attackRange, pHeight);
+                // Attack box centered vertically with player, extends right from player's right edge
+                return new Rectangle(playerCenterX + getWidth() / 2, playerCenterY - attackBoxHalfSize, ATTACK_BOX_SIZE, ATTACK_BOX_SIZE);
             default:
                 // Fallback: If no specific attack direction is set (e.g., from movement),
                 // default to a forward attack based on facing direction.
                 if (facingRight) {
-                    return new Rectangle(px + pWidth, py, attackRange, pHeight);
+                    return new Rectangle(playerCenterX + getWidth() / 2, playerCenterY - attackBoxHalfSize, ATTACK_BOX_SIZE, ATTACK_BOX_SIZE);
                 } else {
-                    return new Rectangle(px - attackRange, py, attackRange, pHeight);
+                    return new Rectangle(playerCenterX - getWidth() / 2 - ATTACK_BOX_SIZE, playerCenterY - attackBoxHalfSize, ATTACK_BOX_SIZE, ATTACK_BOX_SIZE);
                 }
         }
     }

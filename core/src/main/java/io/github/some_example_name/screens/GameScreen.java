@@ -6,7 +6,7 @@ import com.badlogic.gdx.Screen;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer; // Make sure this is imported
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
@@ -18,11 +18,12 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.utils.Scaling;
+import com.badlogic.gdx.math.Rectangle; // Make sure Rectangle is imported
 
 import io.github.some_example_name.Main;
 import io.github.some_example_name.entities.Player;
 import io.github.some_example_name.managers.GameRoundManager;
-import static io.github.some_example_name.entities.Player.AttackDirection; // Import the enum directly for cleaner code
+import static io.github.some_example_name.entities.Player.AttackDirection;
 
 public class GameScreen implements Screen {
 
@@ -31,7 +32,7 @@ public class GameScreen implements Screen {
     private Texture pauseTexture;
     private Stage stage;
     private SpriteBatch gameSpriteBatch;
-    private ShapeRenderer shapeRenderer;
+    private ShapeRenderer shapeRenderer; // Declared here
 
     private ImageButton pauseButton;
     private Cell<ImageButton> pauseCell;
@@ -54,7 +55,7 @@ public class GameScreen implements Screen {
 
         stage = new Stage(new ScreenViewport());
         gameSpriteBatch = new SpriteBatch();
-        shapeRenderer = new ShapeRenderer();
+        shapeRenderer = new ShapeRenderer(); // Initialized here
 
         Gdx.input.setInputProcessor(stage);
 
@@ -137,6 +138,7 @@ public class GameScreen implements Screen {
 
     @Override
     public void show() {
+        Gdx.input.setInputProcessor(stage);
         roundManager.startRound(0);
     }
 
@@ -165,7 +167,7 @@ public class GameScreen implements Screen {
             AttackDirection calculatedDirection = AttackDirection.NONE;
 
             // Use a simple comparison to determine the most dominant direction
-            // You can refine this with dead zones or specific angles if needed
+            // This logic favors diagonal directions if both x and y components are significant
             if (Math.abs(dirX) > Math.abs(dirY)) { // More horizontal movement
                 if (dirX > 0) {
                     calculatedDirection = AttackDirection.RIGHT;
@@ -194,13 +196,22 @@ public class GameScreen implements Screen {
             AttackDirection kAttackDirection = AttackDirection.NONE; // Initialize
 
             // Prioritize vertical movement for K-attack direction
-            if (Gdx.input.isKeyPressed(Input.Keys.W)) {
+            boolean movingUp = Gdx.input.isKeyPressed(Input.Keys.W);
+            boolean movingDown = Gdx.input.isKeyPressed(Input.Keys.S);
+            boolean movingLeft = Gdx.input.isKeyPressed(Input.Keys.A);
+            boolean movingRight = Gdx.input.isKeyPressed(Input.Keys.D);
+
+            if (movingUp) {
                 kAttackDirection = AttackDirection.UP;
-            } else if (Gdx.input.isKeyPressed(Input.Keys.S)) {
+            } else if (movingDown) {
                 kAttackDirection = AttackDirection.DOWN;
+            } else if (movingRight) { // If not moving vertically, check horizontal
+                kAttackDirection = AttackDirection.RIGHT;
+            } else if (movingLeft) {
+                kAttackDirection = AttackDirection.LEFT;
             } else {
-                // If no vertical movement, default to DOWN attack
-                // This makes 'K' a general downward smash if not moving vertically
+                // If no movement keys pressed, default to a specific direction, e.g., DOWN
+                // This makes 'K' a general downward smash if not moving
                 kAttackDirection = AttackDirection.DOWN;
             }
 
@@ -220,6 +231,18 @@ public class GameScreen implements Screen {
         gameSpriteBatch.end();
 
         drawPlayerHealthBar();
+
+        // --- DEBUGGING: Draw Player Attack Hitbox (di player cari ATTACK_BOX_SIZE)---
+        // Only draw the hitbox if the player is currently in an attacking state
+//        if (player.isAttacking()) {
+//            shapeRenderer.setProjectionMatrix(stage.getCamera().combined);
+//            shapeRenderer.begin(ShapeRenderer.ShapeType.Line); // Use Line for outline
+//            shapeRenderer.setColor(1, 1, 0, 1); // Yellow color for hitbox
+//            Rectangle attackRect = player.getAttackRect();
+//            shapeRenderer.rect(attackRect.x, attackRect.y, attackRect.width, attackRect.height);
+//            shapeRenderer.end();
+//        }
+        // --- END DEBUGGING ---
 
         // Contoh pindah ronde dengan Enter jika ronde selesai
         if (!roundManager.isRoundActive() && Gdx.input.isKeyJustPressed(Input.Keys.ENTER)) {
