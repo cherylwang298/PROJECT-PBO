@@ -38,6 +38,10 @@ public class GameRoundManager {
     //test loot
     private final LootManager lootManager;
 
+    //pengecheckan round 5: cw
+    private int totalMonsterThisRound = 0;
+    private int monstersKilledByPlayer = 0;
+
     public GameRoundManager(Main game, Player player) {
         this.game = game;
         this.player = player;
@@ -70,9 +74,9 @@ public class GameRoundManager {
         allRounds.add(new RoundConfig(1, round1));
 
        List<MonsterSpawnConfig> round2 = new ArrayList<>();
-//        round2.add(new MonsterSpawnConfig(Slime.class, 2));
-//        round2.add(new MonsterSpawnConfig(Goblin.class, 2));
-        round2.add(new MonsterSpawnConfig(Zombie.class, 3));
+        round2.add(new MonsterSpawnConfig(Slime.class, 2));
+        round2.add(new MonsterSpawnConfig(Goblin.class, 2));
+//        round2.add(new MonsterSpawnConfig(Zombie.class, 3));
         allRounds.add(new RoundConfig(2, round2));
 
         List<MonsterSpawnConfig> round3 = new ArrayList<>();
@@ -110,6 +114,8 @@ public class GameRoundManager {
         if (roundStarted) return;
         if (roundIndex < 0 || roundIndex >= allRounds.size()) return;
 
+        monstersKilledByPlayer = 0;
+        totalMonsterThisRound = 0;
         this.currentRoundIndex = roundIndex;
         activeMonsters.clear();
         roundActive = true;
@@ -138,6 +144,7 @@ public class GameRoundManager {
     private void spawnAllMonstersNow(MonsterSpawnConfig config) {
         Class<? extends Monsters> monsterClass = config.getMonsterType();
         int count = config.getCount();
+        totalMonsterThisRound += count; //coba: cheryl
         int[] spawnCountPerDoor = new int[3];
 
         for (int i = 0; i < count; i++) {
@@ -253,9 +260,15 @@ public class GameRoundManager {
             boolean cityAlive = cityHearts >= 1;
             boolean playerAlive = player.getHp() > 0;
 
-            if (isFinalRound && cityAlive && playerAlive) {
-                victory();
-                return;
+            if (isFinalRound) {
+                if (monstersKilledByPlayer == totalMonsterThisRound && cityAlive && playerAlive) {
+                    victory();
+                    return;
+                }
+                else {
+                    gameOver();
+                    return;
+                }
             }
 
             if (cityHearts <= 0) {
@@ -336,6 +349,12 @@ public class GameRoundManager {
                     int damagePlayer = (int) player.getDamage();
                     monster.takeDamage(damagePlayer);
                     Gdx.app.log("GameRoundManager", "Monster clicked and took " + damagePlayer + " damage.");
+
+                   if (!monster.isAlive()){
+                       monstersKilledByPlayer++;
+                       Gdx.app.log("GameRoundManager", "Monster Killed by Player. Total: " + monstersKilledByPlayer);
+                   }
+
                     break; // satu monster saja
                 } else {
                     Gdx.app.log("GameRoundManager", "Monster diklik tapi tidak di depan player.");
