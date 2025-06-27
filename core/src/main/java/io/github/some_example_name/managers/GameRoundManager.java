@@ -71,7 +71,7 @@ public class GameRoundManager {
     private void initializeRounds() {
         List<MonsterSpawnConfig> round1 = new ArrayList<>();
         round1.add(new MonsterSpawnConfig(Slime.class, 5));
-//        round1.add(new MonsterSpawnConfig(Buffalo.class, 1));
+//     round1.add(new MonsterSpawnConfig(Buffalo.class, 1));
         allRounds.add(new RoundConfig(1, round1));
 
        List<MonsterSpawnConfig> round2 = new ArrayList<>();

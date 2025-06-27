@@ -413,6 +413,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 
+import java.util.Random;
+
 public class Buffalo extends Monsters {
 
     /* ---------- konstanta perilaku ---------- */
@@ -440,14 +442,16 @@ public class Buffalo extends Monsters {
     private boolean useWaypoint = true;
     private boolean reachedWaypoint = false;
 
+
     /* ============================================================= */
     public Buffalo(float x,float y,float exitX,float exitY){
         super(x,y);
+        Random rand = new Random();
         /* stat */
-        this.health       = 250;
-        this.maxHealth    = 250;
+        this.health       = 350;
+        this.maxHealth    = 350;
         this.speed        =base_speed;
-        this.damageToplayer = 50;    // kalau suatu saat mau dipakai
+        this.damageToplayer = rand.nextInt(10,26);    // kalau suatu saat mau dipakai
         this.damageTocity  = 1;
         this.attackRadius  = attack_radius;
         this.isAggressive  = true;
@@ -539,6 +543,10 @@ public class Buffalo extends Monsters {
 
         /* asumsikan Player punya getPosition():Vector2 yg bisa di-mutate */
         p.getPosition().add(push);
+
+        int playerKBdamage = damageToplayer;
+        p.takeDamage(playerKBdamage);
+
         Gdx.app.log("Buffalo","Knock-back!");
     }
 

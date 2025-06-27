@@ -63,7 +63,7 @@ public abstract class Monsters {
     public boolean isAlive() { return alive && health > 0; }
 
     public boolean hasReachedCity() {
-        float cityBoundaryY = 760; // adjust as needed
+        float cityBoundaryY = 750; // adjust as needed
         return y <= cityBoundaryY;
     }
 
