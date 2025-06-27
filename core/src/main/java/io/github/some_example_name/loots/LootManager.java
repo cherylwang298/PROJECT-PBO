@@ -18,36 +18,36 @@ public class LootManager {
         activeLoots = new LinkedList<>();
     }
 
-    // Spawn loot baru di posisi x,y dengan efek loot tertentu
+    // spawn loot di posisi x,y n sesuai looteffect nya msing" monster
     public void spawnLoot(float x, float y, LootEffect effect) {
         Loot loot = new Loot(x, y, effect);
         activeLoots.add(loot);
     }
 
-    // Update loot: cek apakah player collect loot
+    // cek apakah player collect loot
     public void update(float deltaTime, Player player) {
         Iterator<Loot> iterator = activeLoots.iterator();
         while (iterator.hasNext()) {
             Loot loot = iterator.next();
 
-            // Jika player sudah overlap dengan loot (collect)
+            // if player sdh overlap sm loot (kayak dicollect)
             if (loot.isCollectedBy(player)) {
                 // Terapkan efek loot ke player
                 loot.getEffect().apply(player);
-                // Hapus loot dari list setelah diambil
+                //remove loot dari list setelah diambil
                 iterator.remove();
             }
         }
     }
 
-    // Render semua loot aktif
+    // render semua active loot
     public void render(SpriteBatch batch) {
         for (Loot loot : activeLoots) {
             loot.render(batch);
         }
     }
 
-    // Dispose semua resource loot
+    // dispose
     public void dispose() {
         for (Loot loot : activeLoots) {
             loot.dispose();

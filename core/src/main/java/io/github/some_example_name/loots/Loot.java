@@ -17,8 +17,8 @@ public class Loot {
         this.y = y;
         this.effect = effect;
 
-        // Load texture berdasarkan nama efek (misal speed, hp, damage)
-        String textureName = effect.getEffectName(); // kamu harus buat method getEffectName di LootEffect
+        //load texture depending to looteffect ny: speed->speed, dst
+        String textureName = effect.getEffectName();
         try {
             texture = new Texture(Gdx.files.internal(textureName + ".png"));
         } catch (Exception e) {

@@ -8,6 +8,7 @@ import com.badlogic.gdx.utils.Array;
 
 import io.github.some_example_name.Main;
 import io.github.some_example_name.entities.*;
+import io.github.some_example_name.loots.LootEffect;
 import io.github.some_example_name.loots.LootManager;
 import io.github.some_example_name.screens.GameOverScreen;
 import io.github.some_example_name.screens.VictoryScreen;
@@ -70,46 +71,37 @@ public class GameRoundManager {
     //cheryl: edit + monsters ke setiap rounds
     private void initializeRounds() {
         List<MonsterSpawnConfig> round1 = new ArrayList<>();
-        round1.add(new MonsterSpawnConfig(Slime.class, 5));
-//        round1.add(new MonsterSpawnConfig(Buffalo.class, 1));
+    round1.add(new MonsterSpawnConfig(Slime.class, 5));
+//     round1.add(new MonsterSpawnConfig(Giant.class, 1));
         allRounds.add(new RoundConfig(1, round1));
 
        List<MonsterSpawnConfig> round2 = new ArrayList<>();
-        round2.add(new MonsterSpawnConfig(Slime.class, 2));
+        round2.add(new MonsterSpawnConfig(Slime.class, 3));
         round2.add(new MonsterSpawnConfig(Goblin.class, 2));
 //        round2.add(new MonsterSpawnConfig(Zombie.class, 3));
         allRounds.add(new RoundConfig(2, round2));
 
         List<MonsterSpawnConfig> round3 = new ArrayList<>();
-        round3.add(new MonsterSpawnConfig(Goblin.class, 2));
+        round3.add(new MonsterSpawnConfig(Goblin.class, 3));
         round3.add(new MonsterSpawnConfig(Giant.class, 1));
         allRounds.add(new RoundConfig(3, round3));
 
         List<MonsterSpawnConfig> round4 = new ArrayList<>();
         round4.add(new MonsterSpawnConfig(Zombie.class, 3));
         round4.add(new MonsterSpawnConfig(Giant.class, 2));
+        round4.add(new MonsterSpawnConfig(Goblin.class, 2));
         allRounds.add(new RoundConfig(4, round4));
 
         List<MonsterSpawnConfig> round5 = new ArrayList<>();
         round5.add(new MonsterSpawnConfig(Buffalo.class, 1));
         round5.add(new MonsterSpawnConfig(Giant.class, 2));
+        round5.add(new MonsterSpawnConfig(Goblin.class, 2));
+        round5.add(new MonsterSpawnConfig(Zombie.class, 3));
         allRounds.add(new RoundConfig(5, round5));
 
         Gdx.app.log("GameRoundManager", "Rounds initialized: " + allRounds.size());
     }
 
-//    public void startRound(int roundIndex) {
-//        if (roundStarted) return;
-//        if (roundIndex < 0 || roundIndex >= allRounds.size()) return;
-//
-//        this.currentRoundIndex = roundIndex;
-//        activeMonsters.clear();
-//        roundActive = true;
-//        roundStarted = true;
-//
-//        showRoundStart = true;
-//        roundStartTimer = 0f;
-//    }
 
     public void startRound(int roundIndex) {
         if (roundStarted) return;
@@ -178,9 +170,9 @@ public class GameRoundManager {
             if (monsterClass == Slime.class) {
                 monster = new Slime(spawnX, spawnY, finalExitX, finalExitY);
             } else if (monsterClass == Goblin.class) {
-                monster = new Goblin(spawnX, spawnY, finalExitX, finalExitY);
+                monster = new Goblin(spawnX, spawnY, finalExitX, finalExitY, lootManager);
             } else if (monsterClass == Giant.class) {
-                monster = new Giant(spawnX, spawnY, finalExitX, finalExitY);
+                monster = new Giant(spawnX, spawnY, finalExitX, finalExitY, lootManager);
             } else if (monsterClass == Zombie.class) {
                 monster = new Zombie(spawnX, spawnY, finalExitX, finalExitY, lootManager);
             } else if (monsterClass == Buffalo.class) {
@@ -191,12 +183,14 @@ public class GameRoundManager {
                 return;
             }
 
+            monster.setKilledByPlayer(false);
             activeMonsters.add(monster);
             Gdx.app.log("GameRoundManager", "Spawned " + monsterClass.getSimpleName());
         } catch (Exception e) {
             Gdx.app.error("GameRoundManager", "Failed to spawn monster", e);
         }
     }
+
 
     public void update(float deltaTime) {
         if (showRoundStart) {
@@ -214,62 +208,71 @@ public class GameRoundManager {
         Iterator<Monsters> iterator = activeMonsters.iterator();
         while (iterator.hasNext()) {
             Monsters monster = iterator.next();
+
             if (monster.isAlive()) {
                 monster.update(deltaTime, player);
 
-                //checl klw player hp <= 0 juga game over: edit cher
                 if (player.getHp() <= 0) {
                     Gdx.app.log("GameRoundManager", "Game Over! Player mati.");
                     gameOver();
                     return;
                 }
 
-
                 if (monster.hasReachedCity() || monster.getY() <= paddingBottom) {
+                    Gdx.app.log("GameRoundManager", monster.getClass().getSimpleName() + " reached the city.");
+
+                    // Jangan kasih loot, karena ini bukan dibunuh player
+                    monster.setKilledByPlayer(false);
+                    monster.kill();
+
                     if (cityHealthListener != null) {
                         cityHealthListener.onMonsterReachedCity(monster.getDamageTocity());
                     }
+
                     cityHearts -= monster.getDamageTocity();
                     Gdx.app.log("GameRoundManager", "City hearts: " + cityHearts);
-                    monster.kill();
 
                     if (cityHearts <= 0) {
                         gameOver();
                         return;
                     }
                 }
+
             } else {
+                // Monster mati, kita cek apakah dia dibunuh player
+                boolean killedByPlayer = monster.isKilledByPlayer();
+
+                Gdx.app.log("GameRoundManager", monster.getClass().getSimpleName()
+                    + " is dead. killedByPlayer=" + killedByPlayer);
+
+                    if (monster.isKilledByPlayer()) {
+                        LootEffect lootEffect = monster.getValidLootEffect();
+                        if (lootEffect != null) {
+                            lootManager.spawnLoot(monster.getX(), monster.getY(), lootEffect);
+                        }
+                    }
+
+
                 monster.dispose();
                 iterator.remove();
             }
         }
 
-//        if (roundActive && activeMonsters.isEmpty()) {
-//            if (cityHearts <= 0) {
-//                gameOver();
-//            } else {
-//                endRound();
-//                startNextRound();
-//            }
-//        }
+        lootManager.update(deltaTime, player);
 
-        lootManager.update(deltaTime, player); //test loot
-
-        //check menang/ga di round 5
+        // check round 5
         if (roundActive && activeMonsters.isEmpty()) {
             boolean isFinalRound = getCurrentRoundNumber() == 5;
-            boolean cityAlive = cityHearts >= 1;
+            boolean cityAlive = cityHearts > 0;
             boolean playerAlive = player.getHp() > 0;
 
             if (isFinalRound) {
                 if (monstersKilledByPlayer == totalMonsterThisRound && cityAlive && playerAlive) {
                     victory();
-                    return;
-                }
-                else {
+                } else {
                     gameOver();
-                    return;
                 }
+                return;
             }
 
             if (cityHearts <= 0) {
@@ -279,13 +282,10 @@ public class GameRoundManager {
                 startNextRound();
             }
         }
-
-
     }
-
     private void endRound() {
         roundActive = false;
-        roundStarted = false; //coba
+        roundStarted = false; //coba: cw
         Gdx.app.log("GameRoundManager", "Round " + getCurrentRoundNumber() + " complete!");
     }
 
@@ -327,33 +327,24 @@ public class GameRoundManager {
         }
     }
 
-//    public void handleClick(float x, float y) {
-//        for (Monsters monster : activeMonsters) {
-//            if (monster.isAlive() && monster.contains(x, y)) {
-//                int damagePlayer = (int) player.getDamage();
-//                monster.takeDamage(damagePlayer);
-//                Gdx.app.log("GameRoundManager", "Monster clicked and took " + damagePlayer + " damage.");
-//                break; // hanya satu monster yang terkena klik
-//            }
-//        }
-//    }
 
     public void handleClick(float x, float y) {
         Rectangle attackBox = player.getAttackRect();
 
         for (Monsters monster : activeMonsters) {
             if (monster.isAlive() && monster.contains(x, y)) {
-                // Tambahan: hanya jika monster berada di dalam area serang depan
+                // only if monster ada di dalam area serang depan
                 Rectangle monsterRect = new Rectangle(monster.getX(), monster.getY(), monster.getWidth(), monster.getHeight());
 
                 if (attackBox.overlaps(monsterRect)) {
                     int damagePlayer = (int) player.getDamage();
                     monster.takeDamage(damagePlayer);
-                    Gdx.app.log("GameRoundManager", "Monster clicked and took " + damagePlayer + " damage.");
+                    //Gdx.app.log("GameRoundManager", "Monster clicked and took " + damagePlayer + " damage.");
 
                    if (!monster.isAlive()){
+                       monster.setKilledByPlayer(true);
                        monstersKilledByPlayer++;
-                       Gdx.app.log("GameRoundManager", "Monster Killed by Player. Total: " + monstersKilledByPlayer);
+                      // Gdx.app.log("GameRoundManager", "Monster Killed by Player. Total: " + monstersKilledByPlayer);
                    }
 
                     break; // satu monster saja
@@ -396,6 +387,7 @@ public class GameRoundManager {
 
                     // If the monster dies from this hit, increment the killed counter
                     if (!monster.isAlive()){
+                        monster.setKilledByPlayer(true);
                         monstersKilledByPlayer++;
                         Gdx.app.log("GameRoundManager", "Monster Killed by Player. Total: " + monstersKilledByPlayer);
                         // No explicit remove here, as the main update loop handles removal of dead monsters

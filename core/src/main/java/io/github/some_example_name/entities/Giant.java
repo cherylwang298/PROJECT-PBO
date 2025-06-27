@@ -4,6 +4,10 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
+import io.github.some_example_name.loots.DamageLootEffect;
+import io.github.some_example_name.loots.HpLootEffect;
+import io.github.some_example_name.loots.LootEffect;
+import io.github.some_example_name.loots.LootManager;
 
 import java.util.Random;
 
@@ -27,6 +31,10 @@ public class Giant extends Monsters {
     private float attackTimer = 0f;
 
     private final Random random = new Random();
+
+    //testing loot: cheryl
+    private LootEffect lootEffect;
+    private LootManager lootManager;
 
     public Giant(float x, float y) {
         super(x, y);
@@ -55,10 +63,13 @@ public class Giant extends Monsters {
         assignRandomExitWithWaypoint();
     }
 
-    public Giant(float x, float y, float exitX, float exitY) {
+    public Giant(float x, float y, float exitX, float exitY, LootManager lootManager) {
         this(x, y);
         this.exitX = exitX;
         this.exitY = exitY;
+        this.lootEffect = new DamageLootEffect(random.nextInt(5, 11));
+        this.lootManager = lootManager;
+
     }
 
     private void assignRandomExitWithWaypoint() {
@@ -100,10 +111,10 @@ public class Giant extends Monsters {
             return;
         }
 
-        // Zombie selalu agresif → kejar player
+        // zombie selalu agresif -> kejar/targetin player
         moveTowardPlayer(player, deltaTime);
 
-        // Animasi arah
+
         float dx = player.getX() - x;
         float dy = player.getY() - y;
 
@@ -118,28 +129,6 @@ public class Giant extends Monsters {
         }
     }
 
-    @Override
-    public void onHit(Player player) {
-        health -= (int)player.getDamage();
-        Gdx.app.log("Giant", "Hit! Health: " + health);
-
-        if (health <= 0) {
-            int roll = random.nextInt(3);
-            switch (roll) {
-                case 0:
-                    player.takeDamage(-20);
-                    Gdx.app.log("Loot", "Player gained +20 HP!");
-                    break;
-                case 1:
-                    Gdx.app.log("Loot", "Player speed boosted! (placeholder)");
-                    break;
-                case 2:
-                    Gdx.app.log("Loot", "Player gained +7 damage! (placeholder)");
-                    break;
-            }
-            kill();
-        }
-    }
 
     @Override
     public boolean shouldAttackPlayer(Player player) {
@@ -172,5 +161,9 @@ public class Giant extends Monsters {
     @Override
     public void kill() {
         this.health = 0;
+    }
+    @Override
+    public LootEffect getLootEffect(){
+        return isKilledByPlayer() ? lootEffect : null;
     }
 }

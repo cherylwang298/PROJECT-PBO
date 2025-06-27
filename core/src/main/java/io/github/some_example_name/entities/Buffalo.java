@@ -413,6 +413,8 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 
+import java.util.Random;
+
 public class Buffalo extends Monsters {
 
     /* ---------- konstanta perilaku ---------- */
@@ -440,14 +442,15 @@ public class Buffalo extends Monsters {
     private boolean useWaypoint = true;
     private boolean reachedWaypoint = false;
 
-    /* ============================================================= */
+
     public Buffalo(float x,float y,float exitX,float exitY){
         super(x,y);
+        Random rand = new Random();
         /* stat */
-        this.health       = 250;
-        this.maxHealth    = 250;
+        this.health       = 800;
+        this.maxHealth    = 800;
         this.speed        =base_speed;
-        this.damageToplayer = 50;    // kalau suatu saat mau dipakai
+        this.damageToplayer = rand.nextInt(10,26);    // damage dri knockbac;
         this.damageTocity  = 1;
         this.attackRadius  = attack_radius;
         this.isAggressive  = true;
@@ -471,7 +474,6 @@ public class Buffalo extends Monsters {
         Gdx.app.log("Buffalo","Spawned ("+x+","+y+")");
     }
 
-    /* ============================================================= */
     /* waypoint random kecil biar jalur bervariasi */
     private void assignRandomWaypoint(){
         int style = (int)(Math.random()*3);
@@ -485,7 +487,6 @@ public class Buffalo extends Monsters {
         }
     }
 
-    /* ============================================================= */
     @Override public void update(float dt, Player player){
         /* === animasi sederhana === */
         animTimer += dt;
@@ -514,7 +515,6 @@ public class Buffalo extends Monsters {
         }
     }
 
-    /* ============================================================= */
     /** player berada di “kerucut” depan & radius tertentu */
     private boolean isPlayerInFront(Player p){
         Vector2 toPlayer = new Vector2(
@@ -539,22 +539,13 @@ public class Buffalo extends Monsters {
 
         /* asumsikan Player punya getPosition():Vector2 yg bisa di-mutate */
         p.getPosition().add(push);
+
+        int playerKBdamage = damageToplayer;
+        p.takeDamage(playerKBdamage);
+
         Gdx.app.log("Buffalo","Knock-back!");
     }
 
-    /* ============================================================= */
-    @Override public void onHit(Player p){
-        /* hanya bisa diserang dari samping/belakang */
-        if(!isPlayerInFront(p)){
-            health -= 10;
-            Gdx.app.log("Buffalo","Hit! HP = "+health);
-            if(health<=0) kill();
-        }else{
-            Gdx.app.log("Buffalo","Front attack blocked.");
-        }
-    }
-
-    /* ============================================================= */
     @Override public boolean shouldAttackPlayer(Player p){ return true; }
 
     @Override public void render(SpriteBatch batch){
@@ -566,7 +557,6 @@ public class Buffalo extends Monsters {
         batch.draw(frame, x, y, width, height);
     }
 
-    /* ===== boilerplate ===== */
     @Override public void dispose(){ f1.dispose();f2.dispose();r1.dispose();r2.dispose();l1.dispose();l2.dispose(); }
     @Override public void setSize(float w,float h){ this.width=w; this.height=h; }
     @Override public boolean hasReachedCity(){ return y<=50; }

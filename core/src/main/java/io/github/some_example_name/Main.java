@@ -6,21 +6,27 @@ import io.github.some_example_name.screens.GameOverScreen;
 import io.github.some_example_name.screens.GameScreen;
 import io.github.some_example_name.screens.HomeScreen;
 import io.github.some_example_name.screens.VictoryScreen;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.audio.Music;
 
 public class Main extends Game {
     public SpriteBatch batch;
     public GameScreen gameScreen;
+    private Music bgm;
 
     @Override
     public void create() {
         batch = new SpriteBatch();
-        setScreen(new HomeScreen(this)); // mulai dengan HomeScreen
+
+        bgm = Gdx.audio.newMusic(Gdx.files.internal("bgmTrial.mp3"));
+        bgm.setLooping(true);
+        bgm.setVolume(0.3f); // atur volume sesuai selera
+        bgm.play();
+
+        setScreen(new HomeScreen(this)); // mulai dari HomeScreen
+
+
     }
-//    @Override
-////    public void create() {
-////        setScreen(new VictoryScreen(this));
-//        //setScreen(new GameOverScreen(this));
-//    }
 
     @Override
     public void render() {
@@ -31,5 +37,6 @@ public class Main extends Game {
     public void dispose() {
         batch.dispose();
         getScreen().dispose();
+        if (bgm != null) bgm.dispose();
     }
 }

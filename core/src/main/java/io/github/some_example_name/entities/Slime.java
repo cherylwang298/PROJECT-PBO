@@ -128,12 +128,6 @@ public class Slime extends Monsters {
     }
 
     @Override
-    public void onHit(Player player) {
-        health -= (int)player.getDamage();
-        Gdx.app.log("Slime", "Hit! Health: " + health);
-    }
-
-    @Override
     public boolean shouldAttackPlayer(Player player) {
         return false;
     }

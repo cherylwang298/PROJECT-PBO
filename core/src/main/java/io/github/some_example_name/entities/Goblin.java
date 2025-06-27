@@ -4,6 +4,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
+import io.github.some_example_name.loots.*;
+
+import java.util.Random;
 
 public class Goblin extends Monsters {
 
@@ -22,6 +25,11 @@ public class Goblin extends Monsters {
     private boolean reachedWaypoint = false;
 
     private boolean aggro = false;
+
+    //testing loot: cheryl
+    private LootEffect lootEffect;
+    private LootManager lootManager;
+    private final Random rand = new Random();
 
     public Goblin(float x, float y) {
         super(x, y);
@@ -51,10 +59,14 @@ public class Goblin extends Monsters {
         assignRandomExitWithWaypoint();
     }
 
-    public Goblin(float x, float y, float exitX, float exitY) {
+    public Goblin(float x, float y, float exitX, float exitY, LootManager lootManager) {
         this(x, y);
         this.exitX = exitX;
         this.exitY = exitY;
+
+        //test loot
+        this.lootManager = lootManager;
+        this.lootEffect = new SpeedLootEffect(rand.nextInt(5, 11));
     }
 
     private void assignRandomExitWithWaypoint() {
@@ -127,12 +139,6 @@ public class Goblin extends Monsters {
         return Vector2.dst(x + width / 2, y + height / 2, exitX, exitY) < 20f;
     }
 
-    @Override
-    public void onHit(Player player) {
-        health -= -10;
-        aggro = true;
-        Gdx.app.log("Goblin", "Hit! Health: " + health);
-    }
 
     @Override
     public boolean shouldAttackPlayer(Player player) {
@@ -166,6 +172,12 @@ public class Goblin extends Monsters {
     @Override
     public void kill() {
         this.health = 0;
+
+    }
+
+    @Override
+    public LootEffect getLootEffect(){
+        return isKilledByPlayer() ? lootEffect : null;
     }
 
     @Override

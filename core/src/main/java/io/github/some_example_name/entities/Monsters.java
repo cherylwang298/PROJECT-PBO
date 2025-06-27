@@ -29,6 +29,9 @@ public abstract class Monsters {
 
     private LootEffect lootEffect;
 
+    //cheryl: make sure loot cuma di drop kalau di kill sama player
+    private boolean killedByPlayer = false;
+
     static {
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(1, 1, 1, 1); // putih
@@ -36,7 +39,7 @@ public abstract class Monsters {
         pixelTexture = new Texture(pixmap);
         pixmap.dispose();
     }
-//------------------------------------------------------------
+//-------------------b-a-t-a-s-h-e-h-e-------------------------
 
     public Monsters(float x, float y) {
         this.x = x;
@@ -48,7 +51,6 @@ public abstract class Monsters {
         return lootEffect;
     }
 
-    // Getters
     public float getX() { return x; }
     public float getY() { return y; }
     public float getWidth() { return width; }
@@ -63,7 +65,7 @@ public abstract class Monsters {
     public boolean isAlive() { return alive && health > 0; }
 
     public boolean hasReachedCity() {
-        float cityBoundaryY = 760; // adjust as needed
+        float cityBoundaryY = 750; // adjust as needed
         return y <= cityBoundaryY;
     }
 
@@ -75,14 +77,14 @@ public abstract class Monsters {
     }
 
     public void kill() {
-        alive = false;
+        this.alive = false;
         health = 0;
     }
 
     // Abstract methods for all monster types
     public abstract void update(float deltaTime, Player player);
     public abstract void render(SpriteBatch batch);
-    public abstract void onHit(Player player);
+    //public abstract void onHit(Player player);
     public abstract boolean shouldAttackPlayer(Player player);
     public abstract void dispose();
     public abstract void setSize(float width, float height);
@@ -152,6 +154,23 @@ public abstract class Monsters {
             attackCooldown = attackDelay;
         }
     }
+
+    public boolean isKilledByPlayer(){
+        return killedByPlayer;
+    }
+
+    public void setKilledByPlayer(boolean killedByPlayer){
+        this.killedByPlayer = killedByPlayer;
+    }
+
+public LootEffect getValidLootEffect(){
+        if (isKilledByPlayer()){
+            return getLootEffect();
+        }
+        else {
+            return null;
+        }
+}
 
 
 
