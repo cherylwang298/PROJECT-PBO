@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import io.github.some_example_name.loots.LootEffect;
 
 public abstract class Monsters {
     protected float x, y;
@@ -26,6 +27,8 @@ public abstract class Monsters {
     protected int maxHealth = 100;
     public static Texture pixelTexture;
 
+    private LootEffect lootEffect;
+
     static {
         Pixmap pixmap = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
         pixmap.setColor(1, 1, 1, 1); // putih
@@ -39,6 +42,10 @@ public abstract class Monsters {
         this.x = x;
         this.y = y;
         this.maxHealth = health; //coba buat healthbar
+    }
+
+    public LootEffect getLootEffect(){
+        return lootEffect;
     }
 
     // Getters

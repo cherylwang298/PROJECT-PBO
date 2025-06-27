@@ -7,24 +7,30 @@ import com.badlogic.gdx.math.Rectangle;
 import io.github.some_example_name.entities.Player;
 
 public class Loot {
-    private float x, y;
-    private Texture texture;
-    private String type; // contoh: "gold", "potion"
-    private int value;   // contoh: jumlah gold atau jumlah heal
+    protected float x, y;
+    protected Texture texture;
+    protected float width = 32, height = 32;
+    protected LootEffect effect;
 
-    private float width = 32, height = 32;
-
-    public Loot(float x, float y, String type, int value) {
+    public Loot(float x, float y, LootEffect effect) {
         this.x = x;
         this.y = y;
-        this.type = type;
-        this.value = value;
-        this.texture = new Texture(Gdx.files.internal(type + ".png")); // contoh: gold.png, potion.png
+        this.effect = effect;
+
+        // Load texture berdasarkan nama efek (misal speed, hp, damage)
+        String textureName = effect.getEffectName(); // kamu harus buat method getEffectName di LootEffect
+        try {
+            texture = new Texture(Gdx.files.internal(textureName + ".png"));
+        } catch (Exception e) {
+            Gdx.app.error("Loot", "Failed to load texture: " + textureName + ".png");
+            texture = null;
+        }
     }
 
-    //buat ngeluarin aset looting nya
     public void render(SpriteBatch batch) {
-        batch.draw(texture, x, y, width, height);
+        if (texture != null) {
+            batch.draw(texture, x, y, width, height);
+        }
     }
 
     public boolean isCollectedBy(Player player) {
@@ -35,10 +41,11 @@ public class Loot {
         return new Rectangle(x, y, width, height);
     }
 
-    public String getType() { return type; }
-    public int getValue() { return value; }
+    public LootEffect getEffect() {
+        return effect;
+    }
 
     public void dispose() {
-        texture.dispose();
+        if (texture != null) texture.dispose();
     }
 }

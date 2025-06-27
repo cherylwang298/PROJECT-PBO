@@ -14,4 +14,8 @@ public class SpeedLootEffect implements LootEffect{
         player.setSpeed(player.getSpeed() + bonusSpeed);
     }
 
+    @Override
+    public String getEffectName(){
+        return "SpeedLoot";
+    }
 }

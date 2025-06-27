@@ -8,6 +8,7 @@ import com.badlogic.gdx.utils.Array;
 
 import io.github.some_example_name.Main;
 import io.github.some_example_name.entities.*;
+import io.github.some_example_name.loots.LootManager;
 import io.github.some_example_name.screens.GameOverScreen;
 import io.github.some_example_name.screens.VictoryScreen;
 
@@ -34,6 +35,9 @@ public class GameRoundManager {
 
     private int cityHearts = 5; // jumlah nyawa kota
 
+    //test loot
+    private final LootManager lootManager;
+
     public GameRoundManager(Main game, Player player) {
         this.game = game;
         this.player = player;
@@ -41,6 +45,7 @@ public class GameRoundManager {
         this.activeMonsters = new Array<>();
         this.currentRoundIndex = 0;
         this.roundActive = false;
+        this.lootManager = new LootManager(); //test loot
 
 //        roundStartTexture = new Texture(Gdx.files.internal("round1.png"));//test rouond 1
         initializeRounds();
@@ -64,9 +69,10 @@ public class GameRoundManager {
         round1.add(new MonsterSpawnConfig(Slime.class, 5));
         allRounds.add(new RoundConfig(1, round1));
 
-        List<MonsterSpawnConfig> round2 = new ArrayList<>();
-        round2.add(new MonsterSpawnConfig(Slime.class, 2));
-        round2.add(new MonsterSpawnConfig(Goblin.class, 2));
+       List<MonsterSpawnConfig> round2 = new ArrayList<>();
+//        round2.add(new MonsterSpawnConfig(Slime.class, 2));
+//        round2.add(new MonsterSpawnConfig(Goblin.class, 2));
+        round2.add(new MonsterSpawnConfig(Zombie.class, 3));
         allRounds.add(new RoundConfig(2, round2));
 
         List<MonsterSpawnConfig> round3 = new ArrayList<>();
@@ -168,7 +174,7 @@ public class GameRoundManager {
             } else if (monsterClass == Giant.class) {
                 monster = new Giant(spawnX, spawnY, finalExitX, finalExitY);
             } else if (monsterClass == Zombie.class) {
-                monster = new Zombie(spawnX, spawnY, finalExitX, finalExitY);
+                monster = new Zombie(spawnX, spawnY, finalExitX, finalExitY, lootManager);
             } else if (monsterClass == Buffalo.class) {
                 monster = new Buffalo(spawnX, spawnY, finalExitX, finalExitY);
                 Gdx.app.log("GameRoundManager", "Created Buffalo!");
@@ -239,6 +245,8 @@ public class GameRoundManager {
 //            }
 //        }
 
+        lootManager.update(deltaTime, player); //test loot
+
         //check menang/ga di round 5
         if (roundActive && activeMonsters.isEmpty()) {
             boolean isFinalRound = getCurrentRoundNumber() == 5;
@@ -292,6 +300,8 @@ public class GameRoundManager {
             monster.render(batch);
             monster.renderHealthBar(batch);
         }
+
+        lootManager.render(batch); //test loot
     }
 
     public void startNextRound() {

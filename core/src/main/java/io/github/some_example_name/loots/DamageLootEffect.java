@@ -14,4 +14,8 @@ public class DamageLootEffect implements LootEffect{
         player.setDamage(player.getDamage() + bonusDamage);
     }
 
+    @Override
+    public String getEffectName(){
+        return "DamageLoot";
+    }
 }

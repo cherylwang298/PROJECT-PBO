@@ -4,6 +4,9 @@
     import com.badlogic.gdx.graphics.Texture;
     import com.badlogic.gdx.graphics.g2d.SpriteBatch;
     import com.badlogic.gdx.math.Vector2;
+    import io.github.some_example_name.loots.HpLootEffect;
+    import io.github.some_example_name.loots.LootEffect;
+    import io.github.some_example_name.loots.LootManager;
 
     import java.util.Random;
 
@@ -28,6 +31,10 @@
 
         private final Random random = new Random();
 
+        //testing loot: cheryl
+        private LootEffect lootEffect;
+        private LootManager lootManager;
+
         public Zombie(float x, float y) {
             super(x, y);
             this.attackRadius = 80f; // lebih masuk akal dari 999
@@ -38,7 +45,8 @@
             this.damageToplayer = 15; //toplayer: yang diterima player kalau kenak attack
             this.damageTocity = 1;
             this.isAggressive = true;
-
+            this.lootEffect = new HpLootEffect(10);//test
+            this.lootManager = lootManager;
 
             try {
                 front1 = new Texture(Gdx.files.internal("zombieFront1.png"));
@@ -56,10 +64,14 @@
             assignRandomExitWithWaypoint();
         }
 
-        public Zombie(float x, float y, float exitX, float exitY) {
+        public Zombie(float x, float y, float exitX, float exitY, LootManager lootManager) {
             this(x, y);
             this.exitX = exitX;
             this.exitY = exitY;
+
+            //test loot
+            this.lootManager = lootManager;
+            this.lootEffect = new HpLootEffect(20);
         }
 
         private void assignRandomExitWithWaypoint() {
@@ -175,5 +187,10 @@
         @Override
         public void kill() {
             this.health = 0;
+
+            //test loot
+            if (lootManager != null && lootEffect != null){
+                lootManager.spawnLoot(x,y,lootEffect);
+            }
         }
     }
