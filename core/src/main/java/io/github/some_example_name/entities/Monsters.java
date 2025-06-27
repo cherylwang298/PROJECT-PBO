@@ -39,7 +39,7 @@ public abstract class Monsters {
         pixelTexture = new Texture(pixmap);
         pixmap.dispose();
     }
-//------------------------------------------------------------
+//-------------------b-a-t-a-s-h-e-h-e-------------------------
 
     public Monsters(float x, float y) {
         this.x = x;
@@ -51,7 +51,6 @@ public abstract class Monsters {
         return lootEffect;
     }
 
-    // Getters
     public float getX() { return x; }
     public float getY() { return y; }
     public float getWidth() { return width; }
