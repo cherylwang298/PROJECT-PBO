@@ -234,7 +234,7 @@ public class Buffalo extends Monsters {
         super(x, y);
         this.health = 250;
         this.maxHealth=250; //buat maxhealth healthbar
-        this.speed = 45f;
+        this.speed = 35f;
         this.damageToplayer = 50; //cheryl: edit, ini belum di panggil ye
         this.damageTocity = 1;
         this.attackRadius = 80f;
@@ -254,7 +254,7 @@ public class Buffalo extends Monsters {
             Gdx.app.error("Buffalo", "Texture not found. Using placeholder.");
         }
 
-        this.setSize(100, 100);
+        this.setSize(215, 215);
     }
 
     public Buffalo(float x, float y, float exitX, float exitY) {
