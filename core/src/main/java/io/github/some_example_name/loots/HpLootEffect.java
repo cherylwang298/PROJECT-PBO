@@ -11,9 +11,13 @@ public class HpLootEffect implements LootEffect{
 
     @Override
     public void apply(Player player){
-        player.setHp(player.getHp() + bonusHp);
-//        player.setMaxHp(player.getMaxHp() + bonusHp);
-    }
+        if (player.getHp() + bonusHp > player.getMaxHp()){
+            player.setHp(player.getMaxHp());
+        }
+        else {
+            player.setHp(player.getHp() + bonusHp);
+        }
+ }
 
     @Override
     public String getEffectName(){
