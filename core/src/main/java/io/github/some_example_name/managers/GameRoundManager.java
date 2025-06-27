@@ -58,28 +58,30 @@ public class GameRoundManager {
         return cityHearts;
     }
 
+    //cheryl: edit + monsters ke setiap rounds
     private void initializeRounds() {
         List<MonsterSpawnConfig> round1 = new ArrayList<>();
-        round1.add(new MonsterSpawnConfig(Slime.class, 3));
+        round1.add(new MonsterSpawnConfig(Slime.class, 5));
         allRounds.add(new RoundConfig(1, round1));
 
         List<MonsterSpawnConfig> round2 = new ArrayList<>();
-        round2.add(new MonsterSpawnConfig(Slime.class, 1));
+        round2.add(new MonsterSpawnConfig(Slime.class, 2));
         round2.add(new MonsterSpawnConfig(Goblin.class, 2));
         allRounds.add(new RoundConfig(2, round2));
 
         List<MonsterSpawnConfig> round3 = new ArrayList<>();
-        round3.add(new MonsterSpawnConfig(Goblin.class, 1));
+        round3.add(new MonsterSpawnConfig(Goblin.class, 2));
         round3.add(new MonsterSpawnConfig(Giant.class, 1));
         allRounds.add(new RoundConfig(3, round3));
 
         List<MonsterSpawnConfig> round4 = new ArrayList<>();
-        round4.add(new MonsterSpawnConfig(Zombie.class, 1));
-        round4.add(new MonsterSpawnConfig(Giant.class, 1));
+        round4.add(new MonsterSpawnConfig(Zombie.class, 3));
+        round4.add(new MonsterSpawnConfig(Giant.class, 2));
         allRounds.add(new RoundConfig(4, round4));
 
         List<MonsterSpawnConfig> round5 = new ArrayList<>();
         round5.add(new MonsterSpawnConfig(Buffalo.class, 1));
+        round5.add(new MonsterSpawnConfig(Giant.class, 2));
         allRounds.add(new RoundConfig(5, round5));
 
         Gdx.app.log("GameRoundManager", "Rounds initialized: " + allRounds.size());

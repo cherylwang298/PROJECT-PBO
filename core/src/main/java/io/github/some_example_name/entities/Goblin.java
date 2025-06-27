@@ -168,4 +168,27 @@ public class Goblin extends Monsters {
         this.health = 0;
     }
 
+    @Override
+    public void renderHealthBar(SpriteBatch batch) {
+        float barWidth = this.width;
+        float barHeight = 6f;
+
+        float healthRatio = Math.max(0, Math.min(1, health / (float) maxHealth));
+        float currentBarWidth = barWidth * healthRatio;
+
+        float barX = this.x;
+        float barY = this.y + this.height + 5; // 5px di atas kepala monster
+
+        // background bar (hitam)
+        batch.setColor(1, 0, 0, 1);
+        batch.draw(Monsters.pixelTexture, barX, barY, barWidth, barHeight);
+
+        // health bar
+        batch.setColor(0, 1, 0, 1);
+        batch.draw(Monsters.pixelTexture, barX, barY, currentBarWidth, barHeight);
+
+        batch.setColor(1, 1, 1, 1); // reset warna
+    }
+
+
 }

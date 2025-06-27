@@ -14,15 +14,15 @@ public class RoundManager {
         List<String> monsterTypes = new ArrayList<>();
 
         if (currentRound == 1) {
-            monsterTypes = List.of("slime", "slime", "slime");
+            monsterTypes = List.of("slime", "slime", "slime", "slime", "slime");
         } else if (currentRound == 2) {
-            monsterTypes = List.of("slime", "goblin", "goblin");
+            monsterTypes = List.of("slime", "goblin", "goblin", "slime");
         } else if (currentRound == 3) {
-            monsterTypes = List.of("goblin", "giant");
+            monsterTypes = List.of("goblin", "giant", "giant");
         } else if (currentRound == 4) {
-            monsterTypes = List.of("zombie", "giant");
+            monsterTypes = List.of("zombie", "giant", "zombie", "zombie", "giant");
         } else if (currentRound == 5) {
-            monsterTypes = List.of("buffalo");
+            monsterTypes = List.of("buffalo", "giant", "giant");
         }
 
         List<Monsters> monsters = new ArrayList<>();
