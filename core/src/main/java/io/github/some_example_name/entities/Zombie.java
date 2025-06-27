@@ -45,8 +45,8 @@
             this.damageToplayer = 15; //toplayer: yang diterima player kalau kenak attack
             this.damageTocity = 1;
             this.isAggressive = true;
-            this.lootEffect = new HpLootEffect(10);//test
-            this.lootManager = lootManager;
+//            this.lootEffect = new HpLootEffect(10);//test
+//            this.lootManager = lootManager;
 
             try {
                 front1 = new Texture(Gdx.files.internal("zombieFront1.png"));
@@ -71,7 +71,7 @@
 
             //test loot
             this.lootManager = lootManager;
-            this.lootEffect = new HpLootEffect(20);
+            this.lootEffect = new HpLootEffect(random.nextInt(5,21));
         }
 
         private void assignRandomExitWithWaypoint() {
@@ -132,30 +132,6 @@
             }
         }
 
-
-        @Override
-        public void onHit(Player player) {
-            health -= 10;
-            Gdx.app.log("Zombie", "Hit! Health: " + health);
-
-            if (health <= 0) {
-                int roll = random.nextInt(3);
-                switch (roll) {
-                    case 0:
-                        player.takeDamage(-15);
-                        Gdx.app.log("Loot", "Player gained +15 HP!");
-                        break;
-                    case 1:
-                        Gdx.app.log("Loot", "Player gained speed bonus! (placeholder)");
-                        break;
-                    case 2:
-                        Gdx.app.log("Loot", "Player gained +5 damage! (placeholder)");
-                        break;
-                }
-                kill();
-            }
-        }
-
         @Override
         public boolean shouldAttackPlayer(Player player) {
             return true;
@@ -188,9 +164,10 @@
         public void kill() {
             this.health = 0;
 
-            //test loot
-            if (lootManager != null && lootEffect != null){
-                lootManager.spawnLoot(x,y,lootEffect);
-            }
+        }
+
+        @Override
+        public LootEffect getLootEffect(){
+            return isKilledByPlayer() ? lootEffect : null;
         }
     }
