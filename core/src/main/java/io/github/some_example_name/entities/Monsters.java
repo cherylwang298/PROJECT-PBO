@@ -15,9 +15,12 @@ public abstract class Monsters {
     protected float speed;
     protected int damageTocity;
     protected int damageToplayer;
-    protected float attackRadius = 0f;
     protected boolean isAggressive;
     protected boolean alive = true;
+
+    protected float attackRadius = 0f;
+    protected float attackCooldown = 0f;
+    protected float attackDelay = 1.5f;
 
     //cheryl edit: bikin healthbar
     protected int maxHealth = 100;
@@ -114,6 +117,34 @@ public abstract class Monsters {
         batch.setColor(1, 1, 1, 1);
     }
 
+    // Call di update(): countdown delay
+    public void updateAttackCooldown(float deltaTime) {
+        if (attackCooldown > 0f) {
+            attackCooldown -= deltaTime;
+        }
+    }
+
+    // Monster tracking ke arah player
+    public void moveTowardPlayer(Player player, float deltaTime) {
+        float dx = player.getX() - x;
+        float dy = player.getY() - y;
+        float distance = (float) Math.sqrt(dx * dx + dy * dy);
+
+        if (distance > 1f) {
+            float dirX = dx / distance;
+            float dirY = dy / distance;
+            x += dirX * speed * deltaTime;
+            y += dirY * speed * deltaTime;
+        }
+    }
+
+    // Serang player jika dalam radius dan cooldown habis
+    public void attackPlayer(Player player) {
+        if (attackCooldown <= 0f && isPlayerInRange(player)) {
+            player.takeDamage(damageToplayer);
+            attackCooldown = attackDelay;
+        }
+    }
 
 
 
