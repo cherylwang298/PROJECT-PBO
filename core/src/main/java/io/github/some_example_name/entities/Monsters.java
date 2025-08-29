@@ -174,5 +174,4 @@ public LootEffect getValidLootEffect(){
 }
 
 
-
 }

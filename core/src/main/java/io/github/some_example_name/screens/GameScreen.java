@@ -190,7 +190,7 @@ public class GameScreen implements Screen {
         }
 
         // Keyboard 'K' Attack
-        if (Gdx.input.isKeyJustPressed(Input.Keys.K)) {
+        if (Gdx.input.isKeyPressed(Input.Keys.K)) {
             AttackDirection kAttackDirection = AttackDirection.NONE; // Initialize
 
             // Prioritize vertical movement for K-attack direction
